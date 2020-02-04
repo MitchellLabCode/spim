@@ -147,8 +147,8 @@ for p = 1:length(pos_todo)
                 counter_1 = 1;
                 counter_2 = 1;
                 
-                name1 = [datafolder,'\Time_',sprintf('%06d',TimeCount),'_Angle_',num2str(angle+0*180),'_c',num2str(col),'_ls_',num2str(ls),'.ome.tif'];
-                name2 = [datafolder,'\Time_',sprintf('%06d',TimeCount),'_Angle_',num2str(angle+1*180),'_c',num2str(col),'_ls_',num2str(ls),'.ome.tif'];
+                name1 = [datafolder,filesep, 'Time_',sprintf('%06d',TimeCount),'_Angle_',num2str(angle+0*180),'_c',num2str(col),'_ls_',num2str(ls),'.ome.tif'];
+                name2 = [datafolder,filesep, 'Time_',sprintf('%06d',TimeCount),'_Angle_',num2str(angle+1*180),'_c',num2str(col),'_ls_',num2str(ls),'.ome.tif'];
 
                 % Note that saving using imwrite (below) is slow, and 
                 % saveastiff is also not as optimal, so instead use
@@ -242,8 +242,8 @@ if counter ~=1
     %name1  = ['data\LC\stack',num2str(p-1),'\Time_',sprintf('%06d',TimeCount),'_c',num2str(col),'.tif'];
     %name2  = ['data\RC\stack',num2str(p-1),'\Time_',sprintf('%06d',TimeCount),'_c',num2str(col),'.tif'];
 
-    name1 = [datafolder,'\Time_',sprintf('%06d',TimeCount),'_Angle_',num2str((p-1)*45+0*180),'_c',num2str(col),'_ls_',num2str(ls),'.ome.tif'];
-    name2 = [datafolder,'\Time_',sprintf('%06d',TimeCount),'_Angle_',num2str((p-1)*45+1*180),'_c',num2str(col),'_ls_',num2str(ls),'.ome.tif'];
+    name1 = [datafolder,filesep, 'Time_',sprintf('%06d',TimeCount),'_Angle_',num2str((p-1)*45+0*180),'_c',num2str(col),'_ls_',num2str(ls),'.ome.tif'];
+    name2 = [datafolder,filesep, 'Time_',sprintf('%06d',TimeCount),'_Angle_',num2str((p-1)*45+1*180),'_c',num2str(col),'_ls_',num2str(ls),'.ome.tif'];
     %for j = 1 : meta(1).stacksize
     %    imwrite( image(:,:,j)',name1,'Compression','none','WriteMode','Append');
     %    imwrite(image2(:,:,j)',name2,'Compression','none','WriteMode','Append');
@@ -295,4 +295,4 @@ if counter ~=1
        col = 1;
     end
 end
-disp('done')
+disp('done with all unpacking')
