@@ -39,12 +39,12 @@ function [shiftx,shifty,c] = xcorr2fft(image1,image2)
     
     F     = fftn(image1);
     Fc    = conj(fftn(image2));
-    eps   = 0.00001;
+    % eps   = 0.00001;
     R     = F.*Fc; % DO not normalise!
     % y = ifft(x) can be inlined with y = conj(fft(conj(x)))/length(x).
     c     = ifftn(R); % Inverse fft of Phase correlation gives cross correlation map. 
     [~,i] = max(c(:));
-    [I,J] = ind2sub(size(c),i);
+    [I,J] = ind2sub(size(c),i) ;
 
 
     if abs(I-1)<abs(size(image1,1)-I+1)

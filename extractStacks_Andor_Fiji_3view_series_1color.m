@@ -9,19 +9,16 @@
 
 % To automatize determination of number of tif files in folder to read 
 % (which is different than number to write, in general), set nFiles = 1.
-addpath('/mnt/data/code/spimCode/')
-% addpath('/mnt/data/code/bioformats-develop/components/formats-gpl/matlab/')
-% First run setup.m in imSAnE directory
-
-%%
 nFiles     = 1; 
 % List of all camera view indices: for 6view, should be 0-5
 pos_all = [0,1,2];
 % List of camera views which we wish to analyze
-pos_todo = [1];  
+pos_todo = [0,1,2];  
 % How far to advance in degrees from view to view: note that the view
 % angles to extract are each value of pos_todo*angle_increment
 angle_increment = 60 ;  
+% All possible timestamps to save
+timestamps_to_save = [0:1000] ;
 
 if nFiles <=1
     % npm: We want to count # .ome files here for each view, so 
@@ -87,12 +84,12 @@ fclose(fid);
 Channel_Tag = 'Multi Camera-CameraChannelName';
 
 mkdir(datafolder);
-%mkdir('data/LC');
-%mkdir('data/LC/stack0');
-%mkdir('data/LC/stack1');
-%mkdir('data/RC');
-%mkdir('data/RC/stack0');
-%mkdir('data/RC/stack1');
+%mkdir('data\LC');
+%mkdir('data\LC\stack0');
+%mkdir('data\LC\stack1');
+%mkdir('data\RC');
+%mkdir('data\RC\stack0');
+%mkdir('data\RC\stack1');
 TInit = 0;
 TEnd = nFiles-1;
 %
@@ -105,7 +102,7 @@ for p = 1:length(pos_todo)
     angle = pos_todo(p)*angle_increment ;
     disp(['Running pos ',num2str(pos_todo(p)), ': angle=', num2str(angle)]);
     % loop over positiosn; the first one will be stack00, aso.
-    nameDummy = [nameDummyPos,num2str(p-1)];
+    nameDummy = [nameDummyPos,num2str(pos_todo(p))];
     counter   = 1;
     counter_1 = 1;
     counter_2 = 1; %% we need to count for both cameras now
@@ -136,15 +133,26 @@ for p = 1:length(pos_todo)
         end
                 
         for k = 1 : filesize     
-            temp =  imread(name,k )- 100; % read image, and take away constant offset
+            % Read from TIFF if we wish to make this TP
+            if ismember(TimeCount, timestamps_to_save)
+                % read image, and take away constant offset
+                temp =  imread(name,k )- 100; 
+            end
+            
+            % Add to image for each camera
             if cam(k) == 1 % which camera does the image come from
-                image(:,:,counter_1)  = temp(1:end,1:end);
+                if ismember(TimeCount, timestamps_to_save)
+                    image(:,:,counter_1)  = temp(1:end,1:end);
+                end
                 counter_1 = counter_1+1;
             elseif cam(k) ==2 
-                image2(:,:,counter_2) = temp(1:end,1:end);
+                if ismember(TimeCount, timestamps_to_save)
+                    image2(:,:,counter_2) = temp(1:end,1:end);
+                end
                 counter_2 = counter_2+1;
             end
             counter = counter+1;
+            
             % Once we read 2 stacks, we write to disk for this timestamp
             if counter > 2*meta(1).stacksize
                 image2 = image2(:,:,end:-1:1); % for fusion using fiji image2 stack must be reversed in z. 
@@ -152,8 +160,8 @@ for p = 1:length(pos_todo)
                 counter_1 = 1;
                 counter_2 = 1;
                 
-                name1 = [datafolder,'/Time_',sprintf('%06d',TimeCount),'_Angle_',num2str(angle+0*180),'_c',num2str(col),'_ls_',num2str(ls),'.ome.tif'];
-                name2 = [datafolder,'/Time_',sprintf('%06d',TimeCount),'_Angle_',num2str(angle+1*180),'_c',num2str(col),'_ls_',num2str(ls),'.ome.tif'];
+                name1 = [datafolder,'\Time_',sprintf('%06d',TimeCount),'_Angle_',num2str(angle+0*180),'_c',num2str(col),'_ls_',num2str(ls),'.ome.tif'];
+                name2 = [datafolder,'\Time_',sprintf('%06d',TimeCount),'_Angle_',num2str(angle+1*180),'_c',num2str(col),'_ls_',num2str(ls),'.ome.tif'];
 
                 % Note that saving using imwrite (below) is slow, and 
                 % saveastiff is also not as optimal, so instead use
@@ -235,7 +243,7 @@ for p = 1:length(pos_todo)
     fclose(fid);
 end
 
-if counter ~=1
+if counter ~=1 && ismember(TimeCount, timestamps_to_save)
     % there is a potential bug with missing images from micro manager. 
     % This leads to partial missing files in teh last timepoint of an exp. 
     % to overcome this, we force write the last potentially incomplet
@@ -247,8 +255,8 @@ if counter ~=1
     %name1  = ['data\LC\stack',num2str(p-1),'\Time_',sprintf('%06d',TimeCount),'_c',num2str(col),'.tif'];
     %name2  = ['data\RC\stack',num2str(p-1),'\Time_',sprintf('%06d',TimeCount),'_c',num2str(col),'.tif'];
 
-    name1 = [datafolder,'/Time_',sprintf('%06d',TimeCount),'_Angle_',num2str((p-1)*45+0*180),'_c',num2str(col),'_ls_',num2str(ls),'.ome.tif'];
-    name2 = [datafolder,'/Time_',sprintf('%06d',TimeCount),'_Angle_',num2str((p-1)*45+1*180),'_c',num2str(col),'_ls_',num2str(ls),'.ome.tif'];
+    name1 = [datafolder,'\Time_',sprintf('%06d',TimeCount),'_Angle_',num2str((p-1)*45+0*180),'_c',num2str(col),'_ls_',num2str(ls),'.ome.tif'];
+    name2 = [datafolder,'\Time_',sprintf('%06d',TimeCount),'_Angle_',num2str((p-1)*45+1*180),'_c',num2str(col),'_ls_',num2str(ls),'.ome.tif'];
     %for j = 1 : meta(1).stacksize
     %    imwrite( image(:,:,j)',name1,'Compression','none','WriteMode','Append');
     %    imwrite(image2(:,:,j)',name2,'Compression','none','WriteMode','Append');

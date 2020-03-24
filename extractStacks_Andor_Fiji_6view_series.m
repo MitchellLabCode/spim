@@ -17,6 +17,8 @@ pos_todo = [0,1,2,3,4,5];
 % How far to advance in degrees from view to view: note that the view
 % angles to extract are each value of pos_todo*angle_increment
 angle_increment = 30 ;  
+% All possible timestamps to save
+timestamps_to_save = [0:1000] ;
 
 if nFiles <=1
     % npm: We want to count # .ome files here for each view, so 
@@ -100,7 +102,7 @@ for p = 1:length(pos_todo)
     angle = pos_todo(p)*angle_increment ;
     disp(['Running pos ',num2str(pos_todo(p)), ': angle=', num2str(angle)]);
     % loop over positiosn; the first one will be stack00, aso.
-    nameDummy = [nameDummyPos,num2str(p-1)];
+    nameDummy = [nameDummyPos,num2str(pos_todo(p))];
     counter   = 1;
     counter_1 = 1;
     counter_2 = 1; %% we need to count for both cameras now
@@ -131,15 +133,26 @@ for p = 1:length(pos_todo)
         end
                 
         for k = 1 : filesize     
-            temp =  imread(name,k )- 100; % read image, and take away constant offset
+            % Read from TIFF if we wish to make this TP
+            if ismember(TimeCount, timestamps_to_save)
+                % read image, and take away constant offset
+                temp =  imread(name,k )- 100; 
+            end
+            
+            % Add to image for each camera
             if cam(k) == 1 % which camera does the image come from
-                image(:,:,counter_1)  = temp(1:end,1:end);
+                if ismember(TimeCount, timestamps_to_save)
+                    image(:,:,counter_1)  = temp(1:end,1:end);
+                end
                 counter_1 = counter_1+1;
             elseif cam(k) ==2 
-                image2(:,:,counter_2) = temp(1:end,1:end);
+                if ismember(TimeCount, timestamps_to_save)
+                    image2(:,:,counter_2) = temp(1:end,1:end);
+                end
                 counter_2 = counter_2+1;
             end
             counter = counter+1;
+            
             % Once we read 2 stacks, we write to disk for this timestamp
             if counter > 2*meta(1).stacksize
                 image2 = image2(:,:,end:-1:1); % for fusion using fiji image2 stack must be reversed in z. 
@@ -155,46 +168,50 @@ for p = 1:length(pos_todo)
                 % Bio-Formats library and bsave
                 
                 % SAVE CAMERA 1
-                % Handle case where data was binned
-                if bin == 2
-                    im = uint16( ( double( image(1:2:end,1:2:end,:))+double(image(2:2:end,1:2:end,:))+...
-                         double(image(1:2:end,2:2:end,:))+double(image(2:2:end,2:2:end,:) ) )/4);
-                elseif bin == 8
-                  im=zeros(size(image,1)/8,size(image,2)/8,size(image,3));
-                  for ii = 1:8
-                      for jj=1:8
-                        im = im + double(image(ii:8:end,jj:8:end,:));
+                if ismember(TimeCount, timestamps_to_save)
+                    % Handle case where data was binned
+                    if bin == 2
+                        im = uint16( ( double( image(1:2:end,1:2:end,:))+double(image(2:2:end,1:2:end,:))+...
+                             double(image(1:2:end,2:2:end,:))+double(image(2:2:end,2:2:end,:) ) )/4);
+                    elseif bin == 8
+                      im=zeros(size(image,1)/8,size(image,2)/8,size(image,3));
+                      for ii = 1:8
+                          for jj=1:8
+                            im = im + double(image(ii:8:end,jj:8:end,:));
+                          end
                       end
-                  end
 
-                  im =uint16(im/64);
-                else
-                  im = image; 
-                end %im = image(:,:,end:-1:1);
-               im = reshape(im,[size(im,1),size(im,2),1,size(im,3),1]); 
-               bfsave(im, name1, 'dimensionOrder', 'XYTZC')
+                      im =uint16(im/64);
+                    else
+                      im = image; 
+                    end %im = image(:,:,end:-1:1);
+                   im = reshape(im,[size(im,1),size(im,2),1,size(im,3),1]); 
+                   bfsave(im, name1, 'dimensionOrder', 'XYTZC')
+                end
+                
+                % SAVE CAMERA 2
+                if ismember(TimeCount, timestamps_to_save)
+                    % Now do the second image, which is the second camera - npm
+                    if bin == 2
+                        im =uint16( ( double( image2(1:2:end,1:2:end,:))+double(image2(2:2:end,1:2:end,:))+...
+                            double(image2(1:2:end,2:2:end,:))+double(image2(2:2:end,2:2:end,:) ) )/4); 
+                    elseif bin == 8
+                        im=zeros(size(image2,1)/8,size(image2,2)/8,size(image2,3));
+                        for ii = 1:8
+                            for jj=1:8
+                                im = im + double(image2(ii:8:end,jj:8:end,:));
+                            end
+                        end 
+                        im = uint16(im/64);
+                    else 
+                        im = image2; 
+                    end 
                
-               % SAVE CAMERA 2
-               % Now do the second image, which is the second camera - npm
-               if bin == 2
-                 im =uint16( ( double( image2(1:2:end,1:2:end,:))+double(image2(2:2:end,1:2:end,:))+...
-                     double(image2(1:2:end,2:2:end,:))+double(image2(2:2:end,2:2:end,:) ) )/4); 
-               elseif bin == 8
-                 im=zeros(size(image2,1)/8,size(image2,2)/8,size(image2,3));
-                 for ii = 1:8
-                    for jj=1:8
-                      im = im + double(image2(ii:8:end,jj:8:end,:));
-                    end
-                 end 
-                 im = uint16(im/64);
-               else 
-                 im = image2; 
-               end 
-               
-               im = reshape(im,[size(im,1),size(im,2),1,size(im,3),1]);
-               % bfsave saves a 5D matrix into OME-TIFF using Bio-Formats
-               bfsave(im, name2, 'dimensionOrder', 'XYTZC')
-               
+                    im = reshape(im,[size(im,1),size(im,2),1,size(im,3),1]);
+                    % bfsave saves a 5D matrix into OME-TIFF using Bio-Formats
+                    bfsave(im, name2, 'dimensionOrder', 'XYTZC')
+                end
+                    
                col = col+1;
                % Check if we have filled up this stack (all columns)
                if col > ncol 
@@ -230,7 +247,7 @@ for p = 1:length(pos_todo)
     fclose(fid);
 end
 
-if counter ~=1
+if counter ~=1 && ismember(TimeCount, timestamps_to_save)
     % there is a potential bug with missing images from micro manager. 
     % This leads to partial missing files in teh last timepoint of an exp. 
     % to overcome this, we force write the last potentially incomplet

@@ -75,5 +75,10 @@ function meta = getMetaData(nameDummy,range)
     meta(1).nchan = max(cat(2,meta.chan)+1)/ncam;
     % determine temporal and spatial resolution
     times = cat(2,meta.etime);
-    meta(1).tempres    = round((times(meta(1).stacksize*ncam*meta(1).nchan)-times(1))/1000);
+
+    if meta(1).stacksize*ncam*meta(1).nchan < length(times)
+        meta(1).tempres    = round((times(meta(1).stacksize*ncam*meta(1).nchan)-times(1))/1000);
+    else
+        meta(1).tempres = (times(end) - times(1)) / 1000 ;
+    end
     meta(1).spatialres = (max(cat(2,meta.zpos))-min(cat(2,meta.zpos)))/max(cat(2,meta.snum));
