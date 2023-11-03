@@ -148,6 +148,8 @@ for p = 1:length(pos_todo)
             end
         end
                 
+        % iterate over the pages in the .ome.tif file
+        disp("reading ...")
         for k = 1 : filesize     
             % Read from TIFF if we wish to make this TP
             if ismember(TimeCount, timestamps_to_save)
