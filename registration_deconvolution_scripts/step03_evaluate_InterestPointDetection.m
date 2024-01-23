@@ -2,12 +2,16 @@
 
 rootdir = './interestpoints/' ;
 tps = 0:101 ;   % timepoints
-vtiles = 8:15 ; % view tiles
-previewIPs = false ; 
+vtiles = 0:15 ; % view tiles
+previewIPs = true ; 
 pauseTime = 0.1 ;
+previewEveryN = 10 ;
+densityThres = 0.02 ; % threshold local density
+
 
 % Preallocate
 clc ; 
+addpath(genpath('/mnt/data/code/gut_matlab/plotting/'))
 colors = define_colors(length(vtiles)) ;
 nips = repmat({zeros(length(tps), 1)},length(vtiles), 1); 
 
@@ -27,7 +31,7 @@ for tidx = 1:length(tps)
             assert(size(ips, 1) == max(ips(:, 1))+1) ; % check that the #ips is correct
         
         
-            if previewIPs
+            if previewIPs && mod(tidx, previewEveryN) == 1
                 % rescale pointCloud based on dz
                 ips = ips(:, 2:end) ;
                 pointCloud = ips ;
@@ -50,6 +54,8 @@ for tidx = 1:length(tps)
                 colormap bwr
                 scatter3(ips(:, 1), ips(:, 2), ips(:, 3), 10, localDensities, 'filled');
                 xlabel('x'); ylabel('y'), zlabel('z'); axis equal
+                caxis([0, densityThres])
+                view(2)
                 colorbar
                 title(['tp=' num2str(tp) ': view ' num2str(vtiles(vId))])
                 pause(pauseTime)
