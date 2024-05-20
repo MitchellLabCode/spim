@@ -2,9 +2,9 @@
 scale = 0.19500001;
 
 // Specify the output directory
-outputDir = "D:/rlondo/HandGFPbynGAL4klar_H2AGFPUASMyo1CRFP/2024-05-15_230441/mips/";  // Change this to your desired output directory
+outputDir = "D:/rlondo/HandGFPbynGAL4klar_UASmChCAAXH2AviRFP/2024-05-17_184833/mips/";  // Change this to your desired output directory
 
-for (d = 0; d < 10; d++) {
+for (d = 0; d < 36; d++) {
 
     // Get the name of the current image sequence
     baseName = getTitle();
