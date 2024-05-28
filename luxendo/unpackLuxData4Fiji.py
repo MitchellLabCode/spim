@@ -79,9 +79,13 @@ def save_as_ome_tiff(hdf5_filename, dataset_name, uint16_data, output_directory,
 
 
 if __name__ == "__main__":
-    directory_path = 'D:\\rlondo\\bynGAL4klar_UAS-mCherry-CAAX\\2024-04-25_155740\\raw'  # Replace with your parent directory path
-    output_directory = 'D:\\output_directory'  # Replace with your output directory path
+    # directory_path = 'D:\\rlondo\\bynGAL4klar_UAS-mCherry-CAAX\\2024-04-25_155740\\raw'  # Replace with your parent directory path
+    # directory_path = 'D:\\rlondo\\bynGAL4klar_UAS-mCherry-CAAX\\2024-04-25_155740\\raw'  # Replace with your parent directory path
+    # output_directory = 'D:\\output_directory'  # Replace with your output directory path
+    directory_path = 'E:\\haibei\\48YGAL4klar_UASmChCAAXHiRFP\\2024-05-23_183541'
+    datadir = os.path.join(directory_path, 'raw')
+    output_directory = 'E:\\haibei\\48YGAL4klar_UASmChCAAXHiRFP\\2024-05-23_183541\\unpackedTIFFs'
     bdv_xml_file = os.path.join(directory_path, "bdv.xml")  # Path to the bdv.xml file
     overwrite = True
-    convert_hdf5_files_in_directory(directory_path, output_directory, bdv_xml_file, overwrite)
+    convert_hdf5_files_in_directory(datadir, output_directory, bdv_xml_file, overwrite)
     print("Conversion completed.")
