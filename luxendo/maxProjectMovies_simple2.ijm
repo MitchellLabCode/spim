@@ -1,8 +1,8 @@
 // Set the scale in microns per pixel
-scale = 0.19500001;
-interval = 3 ;
-nStacks = 3 ;
-fps = 5;
+scale = 0.19500001; // 33x magnification has 0.195 microns / pixel
+interval = 3 ; // minutes per dt 
+nStacks = 3 ; //
+fps = 5; // frames per second do you want the output movies to play at
 
 // Specify the output directory
 outputDir = "D:/rlondo/HandGFPbynGAL4klar_UASmChCAAXH2AviRFP/2024-05-17_184833/mips/";  // Change this to your desired output directory
@@ -12,6 +12,7 @@ outputDir = "E:/rio/HandGFPbynGAL4klar_UASmChCAAXHiFP/2024-05-27_125722_22C_butF
 outputDir = "E:/rio/HandGFPbynGAL4klar_UASMyo1CRFPHiFP/2024-05-29_141924/";
 outputDir = "E:/rio/HandGFPbynGAL4klar_UASMyo1CRFPHiFP/2024-05-30_174009/";
 outputDir = "E:/haibei/48YGAL4klar_UASLamGFPUASmChCAAX/2024-06-03_142916/";
+outputDir = "E:/natalia/HandGFPbynGAL4klar_UASmChCAAXUASLamGFP/2024-06-04_172824/";
 
 
 //// 2 color [green magenta]
@@ -93,16 +94,16 @@ outputDir = "E:/haibei/48YGAL4klar_UASLamGFPUASmChCAAX/2024-06-03_142916/";
 
 // Adjust LUTs for all MIP stacks
 //
-//// Now resave and save MIPs as AVIs
-//for (stck = 1; stck < 3; stck++) {
+// Now resave and save MIPs as AVIs
+//for (stck = 0; stck < 4; stck++) {
 //
 //    // Get the name of the current image sequence
-//	  selectImage("Stack"+stck+"_left_composite_mips.tif");
+//	selectImage("Stack"+stck+"_left_composite_mips.tif");
 //    // Construct the filenames for the AVI and Tiff files
 //    aviPath = outputDir + "Stack"+stck+"_left_composite_mips.avi";
 //
 //    // Save the files in the designated directory with the constructed filenames
-//	  saveAs("Tiff", outputDir + baseName + ".tif");
+//	saveAs("Tiff", outputDir + "Stack"+stck+"_left_composite_mips.tif");
 //    run("AVI... ", "compression=JPEG frame="+fps+" save=" + aviPath);
 //    close();
 //    
@@ -120,28 +121,28 @@ outputDir = "E:/haibei/48YGAL4klar_UASLamGFPUASmChCAAX/2024-06-03_142916/";
 // Readjust LUTs for midsection movies
 
 // Now resave and save as AVIs
-for (stck = 0; stck < 3; stck++) {
-
-    // Get the name of the current image sequence
-    baseName="Stack"+stck+"_left_composite_midZ.tif";
-	selectImage(baseName);
-    // Construct the filenames for the AVI and Tiff files
-    aviPath = outputDir + "Stack"+stck+"_left_composite_midZ.avi";
-
-    // Save the files in the designated directory with the constructed filenames
-	saveAs("Tiff", outputDir + "Stack"+stck+"_left_composite_midZ.tif");
-    run("AVI... ", "compression=JPEG frame="+fps+" save=" + aviPath);
-    close();
-    
-    
-    // Get the name of the current image sequence
-    baseName="Stack"+stck+"_right_composite_midZ.tif";
-	selectImage(baseName);
-    // Construct the filenames for the AVI and Tiff files
-    aviPath = outputDir + "Stack"+stck+"_right_composite_midZ.avi";
-
-    // Save the files in the designated directory with the constructed filenames
-	saveAs("Tiff", outputDir + "Stack"+stck+"_right_composite_midZ.tif");
-    run("AVI... ", "compression=JPEG frame="+fps+" save=" + aviPath);
-    close();
-}
+//for (stck = 0; stck < 3; stck++) {
+//
+//    // Get the name of the current image sequence
+//    baseName="Stack"+stck+"_left_composite_midZ.tif";
+//	selectImage(baseName);
+//    // Construct the filenames for the AVI and Tiff files
+//    aviPath = outputDir + "Stack"+stck+"_left_composite_midZ.avi";
+//
+//    // Save the files in the designated directory with the constructed filenames
+//	saveAs("Tiff", outputDir + "Stack"+stck+"_left_composite_midZ.tif");
+//    run("AVI... ", "compression=JPEG frame="+fps+" save=" + aviPath);
+//    close();
+//    
+//    
+//    // Get the name of the current image sequence
+//    baseName="Stack"+stck+"_right_composite_midZ.tif";
+//	selectImage(baseName);
+//    // Construct the filenames for the AVI and Tiff files
+//    aviPath = outputDir + "Stack"+stck+"_right_composite_midZ.avi";
+//
+//    // Save the files in the designated directory with the constructed filenames
+//	saveAs("Tiff", outputDir + "Stack"+stck+"_right_composite_midZ.tif");
+//    run("AVI... ", "compression=JPEG frame="+fps+" save=" + aviPath);
+//    close();
+//}
