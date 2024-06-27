@@ -28,7 +28,7 @@ def parse_bdv_xml(xml_file): # xml_file is bdv_xml_file, which is the path to th
         # In every <ViewSetup>, there are <id>, <name>, etc
         # root.findall(".//ViewSetup")[1] # <Element 'ViewSetup' at 0x7dfd8b3410d0>
         setup_id = setup.find("id").text # 1, 2, 3, ...
-        # print(setup_id)
+        print(setup_id)
 
         setup_name = setup.find("name").text # for example 'ch:0_st:0_ang:h45-v90_obj:right_cam:right'
 
@@ -71,36 +71,37 @@ def convert_hdf5_data_to_ome_tiff(filename, output_directory, angle_map, overwri
     # check if the output file already exists
 
     # hdf5_filename = filename
-    subdirectory_name = os.path.basename(os.path.dirname(hdf5_filename)) # stack_1_channel_1_obj_right
-    original_filename = os.path.splitext(os.path.basename(hdf5_filename))[0] # Cam_right_00077.lux.h5
+    subdirectory_name = os.path.basename(os.path.dirname(filename)) # stack_1_channel_1_obj_right
+    original_filename = os.path.splitext(os.path.basename(filename))[0] # Cam_right_00077.lux.h5
 
     # Check if the dataset_name matches any key in the angle_map
-    angle_suffix = angle_map.get(dataset_name, dataset_name)
-    if 'stack_0' in hdf5_filename:
-        if 'left' in hdf5_filename:
+    # angle_suffix = angle_map.get(dataset_name, dataset_name)
+    if 'stack_0' in filename:
+        if 'left' in filename:
             angle0 = 180
-        elif 'right' in hdf5_filename:
+        elif 'right' in filename:
             angle0 = 0
-    if 'stack_1' in hdf5_filename:
-        if 'left' in hdf5_filename:
+    if 'stack_1' in filename:
+        if 'left' in filename:
             angle0 = 240
-        elif 'right' in hdf5_filename:
+        elif 'right' in filename:
             angle0 = 60
-    if 'stack_2' in hdf5_filename:
-        if 'left' in hdf5_filename:
+    if 'stack_2' in filename:
+        if 'left' in filename:
             angle0 = 300
-        elif 'right' in hdf5_filename:
+        elif 'right' in filename:
             angle0 = 120
 
     # angles=list(angle_map.values())
     # for i in angles:
-    tiff_filename = f"{subdirectory_name}_{original_filename}_Angle{angle0}.ome.tif"
+    tiff_filename = f"{subdirectory_name}_{original_filename}_a{angle0}.ome.tif"
     tiff_filename = tiff_filename.replace('stack_0_channel_', 'c')
     tiff_filename = tiff_filename.replace('stack_1_channel_', 'c')
     tiff_filename = tiff_filename.replace('stack_2_channel_', 'c')
-    tiff_filename = tiff_filename.replace('_left_Cam_left_', '_Time')
-    tiff_filename = tiff_filename.replace('_right_Cam_right', '_Time')
-    tiff_filename = tiff_filename.replace('.lux.', '.')
+    tiff_filename = tiff_filename.replace('_left_Cam_left_', '_t')
+    tiff_filename = tiff_filename.replace('_right_Cam_right_', '_t')
+    tiff_filename = tiff_filename.replace('.lux', '')
+    tiff_filename = tiff_filename.replace('_obj', '')
 
     tiff_path = os.path.join(output_directory, tiff_filename)
     print('creating: ' + tiff_filename)
@@ -162,7 +163,7 @@ def convert_hdf5_data_to_ome_tiff(filename, output_directory, angle_map, overwri
                     # imwrite(tiff_path, uint16_data_z_flipped, metadata={"axes": "ZYX", "OME": ome_metadata.to_xml()})
                     # NPM: This said XYZ until 2024-06-11, but we changed to XYZ above so flipping here in metadata. Is this right?
                     imwrite(tiff_path, uint16_data_z_flipped, metadata={'axes': 'XYZ'}, description=ome_metadata.to_xml())
-                    print(f"Converted {dataset_name} in {hdf5_filename} to {tiff_path}")
+                    print(f"Converted {dataset_name} in {filename} to {tiff_path}")
         """
         # with h5py.File(filename, 'r') as f:
             # f_keys = list(f.keys()) # ['Data', 'metadata']   # There are 2 datasets. (Also shown in Fiji when importing h5)
@@ -187,6 +188,9 @@ if __name__ == "__main__":
     # directory_path = 'E:\\haibei\\48YGAL4klar_UASmChCAAXHiRFP\\2024-05-23_183541'
     # directory_path = '/mnt/data/midgut_chirality/HandGFPbynGAL4klar_UASMyo1CRFPHiRFP/2024-05-28_150855_22C_excellent'
     directory_path = '/mnt/data/midgut_chirality/HandGFPbynGAL4klar_UASMyo1CRFPHiRFP/2024-05-29_182916_22C_excellent'
+
+    # directory_path = '/mnt/data/PSFs/1p7um_waists/2024-06-11_160753_488nm'
+
     datadir = os.path.join(directory_path, 'raw')
     # This is where the raw hdf5 files are. In linux use '/'
     # output_directory = 'E:\\haibei\\48YGAL4klar_UASmChCAAXHiRFP\\2024-05-23_183541\\unpackedTIFFs'
