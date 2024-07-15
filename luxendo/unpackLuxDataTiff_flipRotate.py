@@ -46,7 +46,6 @@ def parse_bdv_xml(xml_file): # xml_file is bdv_xml_file, which is the path to th
     # angle_map # {'stack_0_left': 'Angle225', 'stack_1_right': 'Angle45', 'stack_2_left': 'Angle225', 'stack_3_right': 'Angle45', 'stack_4_left': 'Angle285', 'stack_5_right': 'Angle105', 'stack_6_left': 'Angle285', 'stack_7_right': 'Angle105', 'stack_8_left': 'Angle345', 'stack_9_right': 'Angle165', 'stack_10_left': 'Angle345', 'stack_11_right': 'Angle165'}
 
 
-
 def convert_hdf5_files_in_directory(directory, output_directory, bdv_xml_file, overwrite):
     # Create output directory if it doesn't exist
     # directory = datadir
@@ -57,12 +56,18 @@ def convert_hdf5_files_in_directory(directory, output_directory, bdv_xml_file, o
 
     for root, dirs, files in os.walk(directory):
         # os.walk("...") returns a generator   <generator object _walk at 0x7dfd8bc536f0>
-        for file in files:
+        for file in sorted(files, key=extract_timepoint):
             if file.endswith(".h5") or file.endswith(".hdf5"):
                 file_path = os.path.join(root, file)
                 # file path (an example): '/mnt/data/midgut_tubulogenesis/48Y-GAL4-klar_UASmChCAAXSLamGFP/2024-05-06_143154/raw/stack_1_channel_1_obj_right/Cam_right_00077.lux.h5'
                 # Use this file to test the function "convert_hdf5_data_to_ome_tiff"
                 convert_hdf5_data_to_ome_tiff(file_path, output_directory, angle_map, overwrite)
+
+def extract_timepoint(filename):
+    # Adjust the regex to match the specific format of your filenames
+    match = re.search(r'_(\d+)\.lux\.h5$', filename)
+    return int(match.group(1)) if match else float('inf')
+
 
 # Read dataset. We should convert the dataset to an inverted way,
 # and also rotate the dataset after this step.
@@ -187,9 +192,9 @@ def is_unsigned_integer(dataset):
 if __name__ == "__main__":
     # directory_path = 'E:\\haibei\\48YGAL4klar_UASmChCAAXHiRFP\\2024-05-23_183541'
     # directory_path = '/mnt/data/midgut_chirality/HandGFPbynGAL4klar_UASMyo1CRFPHiRFP/2024-05-28_150855_22C_excellent'
-    directory_path = '/mnt/data/midgut_chirality/HandGFPbynGAL4klar_UASMyo1CRFPHiRFP/2024-05-29_182916_22C_excellent'
-
-    # directory_path = '/mnt/data/PSFs/1p7um_waists/2024-06-11_160753_488nm'
+    # directory_path = '/mnt/data/midgut_chirality/HandGFPbynGAL4klar_UASMyo1CRFPHiRFP/2024-05-29_182916_22C_excellent'
+    # directory_path = '/mnt/data/midgut_tubulogenesis/test/'
+    directory_path = '/mnt/crunch/bynGAL4klar_UASmChCAAXUASLamGFP/2024-06-18_141952_bynGAL4klar_UASmChCAAXUASLamGFP/'
 
     datadir = os.path.join(directory_path, 'raw')
     # This is where the raw hdf5 files are. In linux use '/'
