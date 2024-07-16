@@ -52,12 +52,19 @@ def convert_hdf5_files_in_directory(directory, output_directory, bdv_xml_file, o
 
     for root, dirs, files in os.walk(directory):
         # os.walk("...") returns a generator   <generator object _walk at 0x7dfd8bc536f0>
-        for file in files:
+        for file in sorted(files, key=extract_timepoint):
             if file.endswith(".h5") or file.endswith(".hdf5"):
                 file_path = os.path.join(root, file)
                 # file path (an example): '/mnt/data/midgut_tubulogenesis/48Y-GAL4-klar_UASmChCAAXSLamGFP/2024-05-06_143154/raw/stack_1_channel_1_obj_right/Cam_right_00077.lux.h5'
                 # Use this file to test the function "convert_hdf5_data_to_ome_tiff"
                 convert_hdf5_data_to_ome_tiff(file_path, output_directory, angle_map, overwrite)
+
+
+def extract_timepoint(filename):
+    # Adjust the regex to match the specific format of your filenames
+    match = re.search(r'_(\d+)\.lux\.h5$', filename)
+    return int(match.group(1)) if match else float('inf')
+
 
 # Read dataset. We should convert the dataset to an inverted way,
 # and also rotate the dataset after this step.
