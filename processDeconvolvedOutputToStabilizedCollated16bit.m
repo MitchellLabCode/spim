@@ -100,15 +100,15 @@ Options.imref_intensity = 1 ;
 %Specific meaning of these two variables (im_intensity and imref_intensity: See the notes in "stabilizeImages.m")
 Options.stabChannel = 0 ; % which channel I am stabilizing. Default = 1.
 
+referenceTimepoint = timePoints(end) ;  % Timepoint that is not affected by stabilization (set as reference)
 stabilizeImages(fileNameIn, fileNameOut, rgbName, typename, ...
-timePoints, timePoints, timePoints(1), ...
+timePoints, timePoints, referenceTimepoint, ...
 mipDir, mipoutdir, mips_stab_check, Options)
 
 %% Stabilize the other channels based on stab_channel withour rewriting mips
 Options.overwrite_mips = false ;
 Options.stabChannel = 1 ;
 Options.overwrite_tiffs = true ;
-referenceTimepoint = timePoints(end) ;
 stabilizeImages(fileNameIn, fileNameOut, rgbName, typename, ...
     timePoints, timePoints, referenceTimepoint, ...
     mipDir, mipoutdir, mips_stab_check, Options)
@@ -117,11 +117,11 @@ Options.overwrite_mips = false ;
 Options.overwrite_tiffs = true ;
 Options.stabChannel = 2 ;
 stabilizeImages(fileNameIn, fileNameOut, rgbName, typename, ...
-timePoints, timePoints, timePoints(1), ...
+timePoints, timePoints, referenceTimepoint, ...
 mipDir, mipoutdir, mips_stab_check, Options)
+
 %% Collate multiple colors into one TIFF post-stabilization
 %collate: collect and combine in proper order
-%timePoints=[33:]
 fileNameIn = fullfile(dir16bit, 'Time_%06d_c%d_stab.tif') ;
 fileNameOut = fullfile(dir16bit, 'Time_%06d.tif') ;
 collateColors(fileNameIn, fileNameOut, timePoints, channelsUsed) ; 
