@@ -1,7 +1,3 @@
-
-# The following code works well. But it only deals with the images from the left camera,
-# and it does not add the angle to the new filename.
-
 import os
 import h5py
 import numpy as np
@@ -27,25 +23,24 @@ def parse_bdv_xml(xml_file): # xml_file is bdv_xml_file, which is the path to th
         # len(root.findall(".//ViewSetup")) # this is a list. Len = 12.
         # In every <ViewSetup>, there are <id>, <name>, etc
         # root.findall(".//ViewSetup")[1] # <Element 'ViewSetup' at 0x7dfd8b3410d0>
-        setup_id = setup.find("id").text # 1, 2, 3, ...
-        print(setup_id)
+        setup_id = setup.find("id").text  # 1, 2, 3, ...
+        setup_name = setup.find("name").text  # for example
+        stack = setup_name[8]
+        # print('This is stack ' + stack)
+        # 'ch:0_st:0_ang:h45-v90_obj:right_cam:right'
+        if 'left' in setup_name:
+            start_idx = setup_name.find('ang:h')
+            end_idx = setup_name.find('-v')
+            angle_map['stack_' + setup_name[8] + '_channel_' + setup_name[3] + '_obj_left'] = setup_name[start_idx + 5:end_idx]
 
-        setup_name = setup.find("name").text # for example 'ch:0_st:0_ang:h45-v90_obj:right_cam:right'
+        if 'right' in setup_name:
+            start_idx = setup_name.find('ang:h')
+            end_idx = setup_name.find('-v')
+            angle_map['stack_' + setup_name[8] + '_channel_' + setup_name[3] + '_obj_right'] = setup_name[start_idx + 5:end_idx]
 
-        # Extract angle value using regular expression
-        match = re.search(r'ang:h(\d+)', setup_name)
-        if match:
-            angle_value = match.group(1)
-            if "left" in setup_name:
-                angle_map[f"stack_{setup_id}_left"] = f"Angle{angle_value}"
-            elif "right" in setup_name:
-                angle_map[f"stack_{setup_id}_right"] = f"Angle{angle_value}"
         # print(angle_map)
-
+        # {'stack_1_channel_0_obj_left': '240', 'stack_1_channel_0_obj_right': '60', 'stack_1_channel_2_obj_left': '240', 'stack_1_channel_2_obj_right': '60', 'stack_2_channel_0_obj_left': '300', 'stack_2_channel_0_obj_right': '120', 'stack_2_channel_2_obj_left': '300', 'stack_2_channel_2_obj_right': '120', 'stack_3_channel_0_obj_left': '0', 'stack_3_channel_0_obj_right': '180'}
     return angle_map
-    # angle_map # {'stack_0_left': 'Angle225', 'stack_1_right': 'Angle45', 'stack_2_left': 'Angle225', 'stack_3_right': 'Angle45', 'stack_4_left': 'Angle285', 'stack_5_right': 'Angle105', 'stack_6_left': 'Angle285', 'stack_7_right': 'Angle105', 'stack_8_left': 'Angle345', 'stack_9_right': 'Angle165', 'stack_10_left': 'Angle345', 'stack_11_right': 'Angle165'}
-
-
 
 def convert_hdf5_files_in_directory(directory, output_directory, bdv_xml_file, overwrite):
     # Create output directory if it doesn't exist
@@ -57,12 +52,19 @@ def convert_hdf5_files_in_directory(directory, output_directory, bdv_xml_file, o
 
     for root, dirs, files in os.walk(directory):
         # os.walk("...") returns a generator   <generator object _walk at 0x7dfd8bc536f0>
-        for file in files:
+        for file in sorted(files, key=extract_timepoint):
             if file.endswith(".h5") or file.endswith(".hdf5"):
                 file_path = os.path.join(root, file)
                 # file path (an example): '/mnt/data/midgut_tubulogenesis/48Y-GAL4-klar_UASmChCAAXSLamGFP/2024-05-06_143154/raw/stack_1_channel_1_obj_right/Cam_right_00077.lux.h5'
                 # Use this file to test the function "convert_hdf5_data_to_ome_tiff"
                 convert_hdf5_data_to_ome_tiff(file_path, output_directory, angle_map, overwrite)
+
+
+def extract_timepoint(filename):
+    # Adjust the regex to match the specific format of your filenames
+    match = re.search(r'_(\d+)\.lux\.h5$', filename)
+    return int(match.group(1)) if match else float('inf')
+
 
 # Read dataset. We should convert the dataset to an inverted way,
 # and also rotate the dataset after this step.
@@ -76,31 +78,17 @@ def convert_hdf5_data_to_ome_tiff(filename, output_directory, angle_map, overwri
 
     # Check if the dataset_name matches any key in the angle_map
     # angle_suffix = angle_map.get(dataset_name, dataset_name)
-    if 'stack_0' in filename:
-        if 'left' in filename:
-            angle0 = 180
-        elif 'right' in filename:
-            angle0 = 0
-    if 'stack_1' in filename:
-        if 'left' in filename:
-            angle0 = 240
-        elif 'right' in filename:
-            angle0 = 60
-    if 'stack_2' in filename:
-        if 'left' in filename:
-            angle0 = 300
-        elif 'right' in filename:
-            angle0 = 120
+    for key in angle_map:
+        if key in filename:
+            # print('key is in filename')
+            angle_suffix = angle_map[key]
 
     # angles=list(angle_map.values())
     # for i in angles:
-    tiff_filename = f"{subdirectory_name}_{original_filename}_a{angle0}.ome.tif"
-    tiff_filename = tiff_filename.replace('stack_0_channel_', 'c')
-    tiff_filename = tiff_filename.replace('stack_1_channel_', 'c')
-    tiff_filename = tiff_filename.replace('stack_2_channel_', 'c')
-    tiff_filename = tiff_filename.replace('_left_Cam_left_', '_t')
-    tiff_filename = tiff_filename.replace('_right_Cam_right_', '_t')
-    tiff_filename = tiff_filename.replace('.lux', '')
+    tiff_filename = f"{subdirectory_name}_{original_filename}_{angle_suffix}.ome.tif"
+    tiff_filename = tiff_filename.replace('_left_Cam_left', '_left_flipped_tp')
+    tiff_filename = tiff_filename.replace('_right_Cam_right', '_right_unflipped_tp')
+    tiff_filename = tiff_filename.replace('.lux', '_angle')
     tiff_filename = tiff_filename.replace('_obj', '')
 
     tiff_path = os.path.join(output_directory, tiff_filename)
@@ -187,17 +175,15 @@ def is_unsigned_integer(dataset):
 if __name__ == "__main__":
     # directory_path = 'E:\\haibei\\48YGAL4klar_UASmChCAAXHiRFP\\2024-05-23_183541'
     # directory_path = '/mnt/data/midgut_chirality/HandGFPbynGAL4klar_UASMyo1CRFPHiRFP/2024-05-28_150855_22C_excellent'
-    directory_path = '/mnt/data/midgut_chirality/HandGFPbynGAL4klar_UASMyo1CRFPHiRFP/2024-05-29_182916_22C_excellent'
+    directory_path = '/mnt/data/midgut_tubulogenesis/test'
 
     # directory_path = '/mnt/data/PSFs/1p7um_waists/2024-06-11_160753_488nm'
 
     datadir = os.path.join(directory_path, 'raw')
     # This is where the raw hdf5 files are. In linux use '/'
     # output_directory = 'E:\\haibei\\48YGAL4klar_UASmChCAAXHiRFP\\2024-05-23_183541\\unpackedTIFFs'
-    output_directory = os.path.join(directory_path, 'unpacked_flipped_rotated_TIFFs')
+    output_directory = os.path.join(directory_path, 'unpacked_flipped_rotated_TIFFs_new')
     bdv_xml_file = os.path.join(directory_path, "bdv.xml")  # Path to the bdv.xml file
     overwrite = True
     convert_hdf5_files_in_directory(datadir, output_directory, bdv_xml_file, overwrite)
     print("Conversion completed.")
-
-
