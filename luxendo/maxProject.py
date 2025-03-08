@@ -14,7 +14,7 @@ from PIL import Image
 
 
 # Function to process a single directory
-def process_directory(input_dir, output_dir, dir_name, plane=-1):
+def process_directory(input_dir, output_dir, dir_name, plane=-1, clipZ=[0,0], clipX=[0,0], clipY=[0,0]):
     # Go through all directories in the input_dir directory, make MIPS of all subdirectories
     #
     # Parameters
@@ -45,7 +45,11 @@ def process_directory(input_dir, output_dir, dir_name, plane=-1):
                 print('-> ' + filepath)
                 with h5py.File(filepath, 'r') as f:
                     data = f['/Data'][()]
-                mip_x = np.max(data, axis=0)
+
+                print(np.shape(data))
+                mip_x = np.max(data[clipZ[0]:data.shape[1]-clipZ[1],
+                               clipX[0]:data.shape[1] - clipX[1],
+                               clipY[0]:data.shape[2]-clipY[1]], axis=0)
                 # mip_y = np.max(data, axis=1)
                 # mip_z = np.max(data, axis=2)
                 Image.fromarray(mip_x).save(max_proj_path)
@@ -57,7 +61,8 @@ def process_directory(input_dir, output_dir, dir_name, plane=-1):
                     # take middle z plane
                     plane = np.round(np.size(data, 0) * 0.5).astype(np.int64)
 
-                midz = data[plane]
+                midz = data[plane, clipX[0]:data.shape[1] - clipX[1],
+                               clipY[0]:data.shape[2]-clipY[1]]
                 Image.fromarray(midz).save(midz_path)
 
             else:
@@ -75,7 +80,16 @@ if __name__ == "__main__":
     # parent_dir = 'E:\\rio\\HandGFPbynGAL4klar_UASMyo1CRFPHiFP\\2024-05-28_150855'
     # parent_dir = 'E:\\rio\\HandGFPbynGAL4klar_UASMyo1CRFPHiFP\\2024-05-28_150855_excellent'
     # parent_dir = 'E:\\rio\\HandGFPbynGAL4klar_UASmChCAAXHiFP\\2024-05-31_142410'
-    parent_dir = 'E:\\haibei\\48YGAL4klar_UASLamGFPUASmChCAAX\\2024-06-03_142916'
+    # parent_dir = 'E:\\Chris\\HandGFPbynGAL4klar_UASmChCAAXHiRFP\\2024-07-03_163826'
+    # parent_dir = 'E:\\Chris\\Fish Sarah\\2024-07-10_153939'
+    # parent_dir = 'E:\\haibei\\HandGFP_48YGAL4klar_UASmChCAAX_UASLamGFP\\2024-11-09_171035_HandGFP_48YGAL4klar_UASmChCAAX_UASLamGFP_PART1'
+    # parent_dir = 'E:\\2024-12-18_193810'
+    parent_dir = 'E:\\wenjie\\HandGFP48YGAL4klar_UASmChCAAXHiRFP\\2024-12-22_195734'
+    # parent_dir = 'E:\\stabilityTest\\2024-12-19_102207'
+
+    clipZ = [10,10]
+    clipY = [200,200]
+    clips = dict['z': clipZ, 'y': clipY]
 
     data_dir = os.path.join(parent_dir, 'raw')
     for dir_name in os.listdir(data_dir):
@@ -84,7 +98,7 @@ if __name__ == "__main__":
         if os.path.isdir(input_dir):
             output_dir = parent_dir  # os.path.join(outdir, 'mips', dir_name)
             print('processing ' + input_dir + " -> " + output_dir + "\\mips or midZ")
-            process_directory(input_dir, output_dir, dir_name)
+            process_directory(input_dir, output_dir, dir_name, clipZ=clipZ, clipY=clipY)
             print('done with ' + input_dir)
 
     print('done')

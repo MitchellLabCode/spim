@@ -1,0 +1,91 @@
+{
+	"type": "operation",
+	"data": {
+  	"device": "stacks",
+  	"command": "replaceall",
+  	"stacks": [
+    	{
+      	"name": "stack_0",
+      	"n": 1,
+     	 "reps": 500,
+      	"ref": "z",
+      	"elements": [
+          	{
+            	"start": 0,
+            	"name": "x",
+            	"end": 0,
+            	"instack": false,
+            	"canTile": true
+          	},
+         	 {
+            	"start": 100,
+            	"name": "y",
+            	"end": 100,
+            	"instack": false,
+            	"canTile": true
+          	},
+          	{
+            	"start": 0,
+            	"name": "z",
+            	"end": 0,
+            	"instack": true,
+            	"canTile": false
+          	},
+          	{
+            	"start": 0,
+            	"name": "r",
+            	"end": 0,
+            	"instack": false,
+            	"canTile": false
+          	}
+        	],
+        	"n": 1,
+        	"reps": 500,
+        	"name": "stack_0",
+        	"ref": "z",
+        	"description": ""
+        	},
+        	{
+            	"name": "stack_1",
+         	   "n": 1,
+            	"reps": 500,
+            	"ref": "z",
+            	"elements": [
+                	{
+                  	"start": 0,
+                  	"name": "x",
+                  	"end": 0,
+                  	"instack": false,
+                  	"canTile": true
+                	},
+                	{
+                  	"start": 100,
+                  	"name": "y",
+                  	"end": 100,
+                  	"instack": false,
+     	             "canTile": true
+                	},
+                	{
+                  	"start": 1,
+                  	"name": "z",
+                  	"end": 1,
+                  	"instack": true,
+                  	"canTile": false
+                	},
+                	{
+                  	"start": 0,
+                  	"name": "r",
+                  	"end": 0,
+                  	"instack": false,
+                  	"canTile": false
+                	}
+                  ],
+              	"n": 1,
+              	"reps": 500,
+              	"name": "stack_0",
+              	"ref": "z",
+              	"description": ""
+              	}
+      	]
+    	}
+	}
