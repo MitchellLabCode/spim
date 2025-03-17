@@ -18,13 +18,13 @@ with open('E:/jbutler/test500fps/add_stack_fromJan_101524.json', 'r') as file:
   contents = json.load(file)
 
 dz = 2  # microns, the step in z for each view
-minz = [-85, -302]  # the starting value of z for each view (STACK 0, stack 1)
-maxz = [230, 0]   # the final value of z for each view... Note: ranges are in columns. ex, stack0 z range -154,-422
-rot_angles = [0, 270]  # the first angle rotation
+minz = [-555, -334]  # the starting value of z for each view (STACK 0, stack 1)
+maxz = [-300, -98]   # the final value of z for each view... Note: ranges are in columns. ex, stack0 z range -154,-422
+rot_angles = [190, 280]  # the first angle rotation
 # rot_incrememnt = 90  # can be set to whatever value you want
 # rot_angles = [rot_angle, rot_angle + rot_incrememnt]
-xvals = [4874, 4874]
-yvals = [-150, -254]
+xvals = [4045, 4045]
+yvals = [-559, 85]
 
 stacks = contents['data']['stacks']
 
@@ -57,7 +57,7 @@ for j in [0, 1]:
         stacks.append(new_stack)
 
 
-with open('/sid/add_multipleStacks_RotateAngle_20250227_v3.json', 'w') as f_out:
+with open('E:/sid/add_multipleStacks_RotateAngle_202503141216.json', 'w') as f_out:
     json.dump(contents, f_out, indent=2)
 
 print('done')
