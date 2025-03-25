@@ -77,6 +77,28 @@ function combine_xml_files(xml_files, output_file)
     save_xml_manually(base_doc, output_file);
     fprintf('Merged XML saved to %s\n', output_file);
 end
+% 
+% function save_xml_manually(doc, output_file)
+%     % Save XML using pretty formatting by setting a document serializer
+%     serializer = javax.xml.transform.stream.StreamResult(output_file);
+%     transformer = javax.xml.transform.TransformerFactory.newInstance().newTransformer();
+% 
+%     % Enable pretty printing
+%     transformer.setOutputProperty(javax.xml.transform.OutputKeys.INDENT, "yes");
+%     transformer.setOutputProperty("{http://xml.apache.org/xslt}indent-amount", "2");
+% 
+%     % Write the formatted XML to the file
+%     transformer.transform(javax.xml.transform.dom.DOMSource(doc), serializer);
+% 
+%     % Now, manually remove excess whitespace between tags
+%     % Read the file, remove extra whitespace, and overwrite the file
+%     xml_str = fileread(output_file);
+%     xml_str = regexprep(xml_str, '>\\s+<', '><'); % Remove excess spaces
+%     fid = fopen(output_file, 'w');
+%     fprintf(fid, '%s', xml_str);
+%     fclose(fid);
+% end
+
 
 function save_xml_manually(doc, output_file)
     % Save XML using pretty formatting by setting a document serializer
@@ -90,10 +112,16 @@ function save_xml_manually(doc, output_file)
     % Write the formatted XML to the file
     transformer.transform(javax.xml.transform.dom.DOMSource(doc), serializer);
     
-    % Now, manually remove excess whitespace between tags
-    % Read the file, remove extra whitespace, and overwrite the file
+    % Now, manually remove excess whitespace between tags and extra blank lines
     xml_str = fileread(output_file);
-    xml_str = regexprep(xml_str, '>\\s+<', '><'); % Remove excess spaces
+    
+    % Remove excess spaces between tags
+    xml_str = regexprep(xml_str, '>\\s+<', '><');
+    
+    % Remove extra blank lines (collapse multiple newlines into a single one)
+    xml_str = regexprep(xml_str, '\n\s*\n', '\n');
+    
+    % Write the cleaned XML back to the file
     fid = fopen(output_file, 'w');
     fprintf(fid, '%s', xml_str);
     fclose(fid);

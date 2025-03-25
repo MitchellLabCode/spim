@@ -6,5 +6,5 @@
 xmlfns = {'./dataset_ch0IPs.xml', ...
     './dataset_ch1IPs.xml', ...
     './dataset_ch2IPs.xml'} ;
-outfn = './dataset_allIPs2.xml' ;
+outfn = './dataset_allIPs.xml' ;
 combine_xml_files(xmlfns, outfn)
