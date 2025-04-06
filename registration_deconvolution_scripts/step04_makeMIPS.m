@@ -1,5 +1,6 @@
 %% Make MIPs for either fused or deconvolved images
 
+
 datdir = './' ;
 fns = dir(datdir) ;
 % get timepoint list from list of timepoints already done
