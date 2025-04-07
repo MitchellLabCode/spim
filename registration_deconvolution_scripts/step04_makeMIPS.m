@@ -20,10 +20,11 @@ end
 
 timePoints=unique(tpList);
 
-
+addpath('/project/npmitchell/canto/code/matlab/master_pipeline/')
+addpath('/project/npmitchell/canto/code/tubular/utility/bfmatlab/')
 
 outdir = fullfile(datdir, 'mips') ;
 Options.overwrite_mips = false ;
 Options.scale = -1 ; % do NOT rescale intensities during intensity projection
 Options.channels = [0] ;
-makeMips(timePoints, datdir, fn_prestab, outdir, Options)
+makeMips(timePoints, datdir, fnPattern, outdir, Options)
