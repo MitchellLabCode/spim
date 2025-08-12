@@ -4,11 +4,11 @@
 
 % datdir = '/mnt/crunch/actb2-mem-cherry_h2afva-gfp/202307111346_4views_1p4um_1ms/' ;
 % datdir = '/mnt/crunch/48YGAL4klarGFPnlsCAAXmCh/202308101028_180s_1p4um_2mW2mW_48YG4knlsGFPCAAXmCh_0p25_3p0msexposure/data/';
-datdir = '/media/npmitchell/Mobile7/npmitchell/202208141503_180s_1p4um_2mW3mW_48YG4kLamGFPCAAXmCh_MAKE_MIPS_TO_CHECK/Time4views_0p7_07msexposure/data';
+datdir = '/';
 outdir = '/mnt/crunch/48YGAL4klarLamGFPCAAXmCh/202308141503_180s_1p4um_2mW3mW_48YG4kLamGFPCAAXmCh_Time4views_0p7_07msexposure_FAILED_CLOSURE' ;
 channels = [1,2] ;
-angles = 0:45:359 ;
-times = 0:99 ;
+angles = 0:60:359 ;
+times = 0:118 ;
 
 % Make the output directory
 if ~exist(outdir, 'dir')

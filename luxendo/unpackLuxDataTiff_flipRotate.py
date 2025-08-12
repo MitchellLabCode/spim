@@ -86,8 +86,8 @@ def convert_hdf5_data_to_ome_tiff(filename, output_directory, angle_map, overwri
     # angles=list(angle_map.values())
     # for i in angles:
     tiff_filename = f"{subdirectory_name}_{original_filename}_{angle_suffix}.ome.tif"
-    tiff_filename = tiff_filename.replace('_left_Cam_left', '_left_flipped_tp')
-    tiff_filename = tiff_filename.replace('_right_Cam_right', '_right_unflipped_tp')
+    tiff_filename = tiff_filename.replace('_left_Cam_left', '_tp')
+    tiff_filename = tiff_filename.replace('_right_Cam_right', '_tp')
     tiff_filename = tiff_filename.replace('.lux', '_angle')
     tiff_filename = tiff_filename.replace('_obj', '')
 
@@ -173,16 +173,12 @@ def is_unsigned_integer(dataset):
 
 
 if __name__ == "__main__":
-    # directory_path = 'E:\\haibei\\48YGAL4klar_UASmChCAAXHiRFP\\2024-05-23_183541'
-    # directory_path = '/mnt/data/midgut_chirality/HandGFPbynGAL4klar_UASMyo1CRFPHiRFP/2024-05-28_150855_22C_excellent'
-    directory_path = '/mnt/data/midgut_tubulogenesis/test'
 
-    # directory_path = '/mnt/data/PSFs/1p7um_waists/2024-06-11_160753_488nm'
+    directory_path = '/project/npmitchell/canto/HandGFPbynGAL4klar_UASMyo1CRFPHiRFP/2024-06-26_175116_crisp_120s_HandGFPbynGAL4klar_UASMyo1CRFPHiRFP'
 
     datadir = os.path.join(directory_path, 'raw')
     # This is where the raw hdf5 files are. In linux use '/'
-    # output_directory = 'E:\\haibei\\48YGAL4klar_UASmChCAAXHiRFP\\2024-05-23_183541\\unpackedTIFFs'
-    output_directory = os.path.join(directory_path, 'unpacked_flipped_rotated_TIFFs_new')
+    output_directory = os.path.join(directory_path, 'unpacked')
     bdv_xml_file = os.path.join(directory_path, "bdv.xml")  # Path to the bdv.xml file
     overwrite = True
     convert_hdf5_files_in_directory(datadir, output_directory, bdv_xml_file, overwrite)
