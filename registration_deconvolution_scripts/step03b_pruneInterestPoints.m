@@ -1,19 +1,18 @@
 % Remove interest points based on local density (determined via kdTree)
 % NPMitchell 2023
 
-
 rootdir = './interestpoints/' ;
-tps = 0:101 ;   % timepoints to prune
-vtiles = 0:15 ; % view tiles whose interest points to prune
+tps = 0:118 ;   % timepoints to prune
+vtiles = 0:17 ; % view tiles whose interest points to prune
 
 % Parameters for the experimental data:
-dz = 1.4 ; % um, step size between frames in z
-dx = 0.2619 ; % um, step size between pixels in xy
+dz = 1.0 ; % um, step size between frames in z
+dx = 0.195 ; % um, step size between pixels in xy
 
 % Parameters for the pruning based on Density
 useDensity = true ;
 densityThres = 0.02 ; % threshold local density
-preview = false ; % show pruning in figure window
+preview = true ; % show pruning in figure window
 pausetime = 0.1 ; % time to show pruning, in seconds
 
 % Parameters for the pruning based on ROI
@@ -28,7 +27,7 @@ includeExclude = 'exclude' ;
 
 % Preallocate
 clc ; 
-colors = define_colors(length(vtiles)) ;
+colors = lines(length(vtiles)) ;
 % Count number removed
 nipsRm = repmat({zeros(length(tps), 1)},length(vtiles), 1); 
 nipsKeep = nipsRm ;
