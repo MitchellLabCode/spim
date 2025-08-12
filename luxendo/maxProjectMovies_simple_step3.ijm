@@ -6,6 +6,16 @@ fps = 5; // frames per second do you want the output movies to play at
 
 // Make sure to have a trailing forward slash at the end!
 outputDir = "E:/Alex/HandGFP48YGAL4UASmChCAAXHiRFP/2025-03-12_144525/" ; 
+outputDir = "E:/boris/bynGAL4klar_UASmChCAAXHiRFP/20250327_tiltedEmbryo_shiftsInY/2025-03-27_180348_part4_adjustY/";
+
+
+outputDir = "E:/boris/bynGAL4klar_UASmChCAAXHiRFP/2025-06-13_164028/";
+outputDir = "E:/boris/bynGAL4klar_UASmChCAAXHiRFP/2025-06-13_153744/";
+//outputDir = "E:/boris/bynGAL4klar_UASmChCAAXHiRFP/2025-06-13_164244/";
+outputDir = "E:/boris/bynGAL4klar_UASmChCAAXHiRFP/2025-06-13_172111/";
+outputDir = "E:/Chris/bapGAL4UAShidUASStingerH2aviRFP/2025-06-22_171054/";
+
+
 // Now run step3
 
 ////////////////////////////////////////////////////////////

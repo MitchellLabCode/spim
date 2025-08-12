@@ -4,7 +4,7 @@ scale = 0.19500001; // 33x magnification has 0.195 microns / pixel
 // scale = 0.2925 ; // scale for 22.2x
 interval = 2 ; // minutes per dt 
 nStacks = 3 ; //
-nChannels = 3 ; // number of Channels
+nChannels = 2 ; // number of Channels
 fps = 5; // frames per second do you want the output movies to play at
 stack0 = 0 ; // what is the index of the first stack? Usually zero.
 time0 = 0 ; // first frame's timestamp in minutes
@@ -15,10 +15,10 @@ time0 = 0 ; // first frame's timestamp in minutes
 
 if (nChannels == 2) {
 	// 2 color [green magenta]
-	// grnCh = 0 ;
-	// magCh = 1 ;
-	grnCh = 1 ;
-	magCh = 2 ;
+	grnCh = 0 ;
+	magCh = 1 ;
+	// grnCh = 1 ;
+	// magCh = 2 ;
 }
 if (nChannels == 3) {
 	// 3 color [cyan red white]
@@ -29,16 +29,18 @@ if (nChannels == 3) {
 
 // Specify the output directory
 // Make sure to have a trailing forward slash at the end!
-masterDir = "E:/wenjie/HandGFP48YGAL4klar_UASmChCAAXHiRFP/2024-12-26/";
+masterDir = "E:/boris/bynGAL4klar_UASmChCAAXHiRFP/20250327_tiltedEmbryo_shiftsInY/";
 outputDirs = newArray(
-    "E:/wenjie/HandGFP48YGAL4klar_UASmChCAAXHiRFP/2024-12-26_164508_part1/",
-    "E:/wenjie/HandGFP48YGAL4klar_UASmChCAAXHiRFP/2024-12-26_164927_part2_adjustedZofStack1/",
-    "E:/wenjie/HandGFP48YGAL4klar_UASmChCAAXHiRFP/2024-12-26_165329_part3_adjustedX/",
-    "E:/wenjie/HandGFP48YGAL4klar_UASmChCAAXHiRFP/2024-12-26_170542_part4_adjustedZofStack1/"
+    "E:/boris/bynGAL4klar_UASmChCAAXHiRFP/20250327_tiltedEmbryo_shiftsInY/2025-03-27_155301_part1/",
+    "E:/boris/bynGAL4klar_UASmChCAAXHiRFP/20250327_tiltedEmbryo_shiftsInY/2025-03-27_170935_part2/",
+    "E:/boris/bynGAL4klar_UASmChCAAXHiRFP/20250327_tiltedEmbryo_shiftsInY/2025-03-27_175857_part3_dtLongTiled/",
+    "E:/boris/bynGAL4klar_UASmChCAAXHiRFP/20250327_tiltedEmbryo_shiftsInY/2025-03-27_180348_part4_adjustY/",
+    "E:/boris/bynGAL4klar_UASmChCAAXHiRFP/20250327_tiltedEmbryo_shiftsInY/2025-03-27_180735_part5/"
 );
 
 
 //// END OF PARAMETERS SECTION //////////////////////////////////////////////////////
+
 /*
 /////////////////////////////////////////////////////////////////////////////////////
 //// SECTION 0: Load individual TIFF stacks /////////////////////////////////////////
@@ -197,15 +199,15 @@ for (i = 0; i < outputDirs.length; i++) {
 		}
 	}
 }
-// */
+*/
 
 
 //////////////////////////////////////////////////////////
 //////// SECTION II //////////////////////////////////////
 //////////////////////////////////////////////////////////
-/*
-// // Adjust LUTs for all MIP stacks
 
+// // Adjust LUTs for all MIP stacks
+/*
 // // Now resave and save MIPs as AVIs
 for (stck = stack0; stck < nStacks+stack0; stck++) {
 	   
@@ -288,9 +290,9 @@ for (stck = stack0; stck < nStacks+stack0; stck++) {
 //////////////////////////////////////////////////////////
 //////// SECTION III /////////////////////////////////////
 //////////////////////////////////////////////////////////
-/*
-// // Adjust LUTs for all MIP stacks
 
+// // Adjust LUTs for all MIP stacks
+/*
 // // Now resave and save MIPs as AVIs
 for (stck = stack0; stck < nStacks+stack0; stck++) {
 
@@ -373,5 +375,5 @@ for (stck = stack0; stck < nStacks+stack0; stck++) {
     close();
 }
 
-*/
+// */
 
