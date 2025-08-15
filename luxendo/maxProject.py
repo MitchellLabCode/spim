@@ -15,7 +15,7 @@ from PIL import Image
 
 # Function to process a single directory
 def process_directory(input_dir, output_dir, dir_name, plane=-1, clipZ=[0,0], clipX=[0,0], clipY=[0,0],
-                      planeX=[-1], do_mips=True, do_midZ=True, do_midX=False):
+                      planeX=[-1], do_mips=True, do_midZ=True, do_midX=False, process_in_reverse=True):
     # Go through all directories in the input_dir directory, make MIPS of all subdirectories
     # Note data is in format ZXY.
     #
@@ -44,7 +44,11 @@ def process_directory(input_dir, output_dir, dir_name, plane=-1, clipZ=[0,0], cl
                 midx_output_dir = os.path.join(output_dir, f'midX{planeX[i]:04d}')
                 os.makedirs(midx_output_dir, exist_ok=True)
 
-    for filename in sorted(os.listdir(input_dir)):
+    filenames = sorted(os.listdir(input_dir))
+    if process_in_reverse:
+        filenames = filenames[::-1]
+
+    for filename in filenames:
         if filename.endswith('.h5'):
             base_filename = os.path.splitext(filename)[0]
 
@@ -118,13 +122,14 @@ def process_directory(input_dir, output_dir, dir_name, plane=-1, clipZ=[0,0], cl
 
 if __name__ == "__main__":
     parent_dir = 'E:\\avistrok\\bapGAL4_UAShidUASstingerHiRFP\\2025-08-06_121230' #bapGAL4_UAShidUASstingerHiRFP'
-    parent_dir = '/project/npmitchell/avistrok/bapGAL4_UAShidUASstingerHiRFP/2025-08-04_131451/'
+    parent_dir = '/project/npmitchell/avistrok/bapGAL4_UAShidUASstingerHiRFP/2025-08-04_165006/'
 
     #parent_dir = 'E:\\boris\\bynGAL4klar_UASmChCAAXHiRFP\\2025-06-17\\2025-06-17_165029'
     # "E:\boris\bynGAL4klar_UASmChCAAXHiRFP\2025-06-16\2025-06-16_153503"
     multiple_dirs = False
     #list_of_parent_dirs = ['E:\\boris\\bynGAL4klar_UASmChCAAXHiRFP\\2025-06-28\\2025-06-28_173043', 'E:\\boris\\bynGAL4klar_UASmChCAAXHiRFP\\2025-06-28\\2025-06-28_173646', 'E:\\boris\\bynGAL4klar_UASmChCAAXHiRFP\\2025-06-28\\2025-06-28_173852', 'E:\\boris\\bynGAL4klar_UASmChCAAXHiRFP\\2025-06-28\\2025-06-28_181654', 'E:\\boris\\bynGAL4klar_UASmChCAAXHiRFP\\2025-06-28\\2025-06-28_181857', 'E:\\boris\\bynGAL4klar_UASmChCAAXHiRFP\\2025-06-28\\2025-06-28_184516', 'E:\\boris\\bynGAL4klar_UASmChCAAXHiRFP\\2025-06-28\\2025-06-28_191308', 'E:\\boris\\bynGAL4klar_UASmChCAAXHiRFP\\2025-06-28\\2025-06-28_202253']
 
+    process_in_reverse = True
     do_midX = True
     do_midZ = True
     do_mips = True
@@ -143,7 +148,7 @@ if __name__ == "__main__":
                 output_dir = parent_dir  # os.path.join(outdir, 'mips', dir_name)
                 print('processing ' + input_dir + " -> " + output_dir + "\\mips or midZ")
                 process_directory(input_dir, output_dir, dir_name, clipZ=clipZ, clipY=clipY, do_mips=do_mips,
-                                  do_midZ=do_midZ, do_midX=do_midX, planeX=planeX)
+                                  do_midZ=do_midZ, do_midX=do_midX, planeX=planeX, process_in_reverse=process_in_reverse)
                 print('done with ' + input_dir)
     else:
         for parent_dir in list_of_parent_dirs:
@@ -154,7 +159,10 @@ if __name__ == "__main__":
                 if os.path.isdir(input_dir):
                     output_dir = parent_dir  # os.path.join(outdir, 'mips', dir_name)
                     print('processing ' + input_dir + " -> " + output_dir + "\\mips or midZ")
-                    process_directory(input_dir, output_dir, dir_name, clipZ=clipZ, clipY=clipY)
+                    process_directory(input_dir, output_dir, dir_name,
+                                      clipZ=clipZ, clipY=clipY, do_mips=do_mips,
+                                      do_midZ=do_midZ, do_midX=do_midX, planeX=planeX,
+                                      process_in_reverse=process_in_reverse)
                     print('done with ' + input_dir)
 
 
