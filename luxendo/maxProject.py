@@ -44,7 +44,7 @@ def process_directory(input_dir, output_dir, dir_name, plane=-1, clipZ=[0,0], cl
                 midx_output_dir = os.path.join(output_dir, f'midX{planeX[i]:04d}')
                 os.makedirs(midx_output_dir, exist_ok=True)
 
-    for filename in os.listdir(input_dir):
+    for filename in sorted(os.listdir(input_dir)):
         if filename.endswith('.h5'):
             base_filename = os.path.splitext(filename)[0]
 
@@ -74,6 +74,8 @@ def process_directory(input_dir, output_dir, dir_name, plane=-1, clipZ=[0,0], cl
                 print(np.shape(data))
 
                 if do_mips:
+                    print(f"--> {max_proj_path}")
+
                     mip_x = np.max(data[clipZ[0]:data.shape[1]-clipZ[1],
                                    clipX[0]:data.shape[1] - clipX[1],
                                    clipY[0]:data.shape[2]-clipY[1]], axis=0)
@@ -84,6 +86,7 @@ def process_directory(input_dir, output_dir, dir_name, plane=-1, clipZ=[0,0], cl
                     # save_mip_images(mip_z, 'z', base_filename, output_dir)
 
                 if do_midZ:
+                    print(f"--> {midz_path}")
                     # Subset of z-stack as mip (mid-saggital, for ex)
                     if plane < 0:
                         # take middle z plane
@@ -105,6 +108,7 @@ def process_directory(input_dir, output_dir, dir_name, plane=-1, clipZ=[0,0], cl
                             midx_path = os.path.join(midx_output_dir, dir_name + f"_midX{xplane:04d}",
                                                      f"{base_filename}_midX{xplane:04d}.tiff")
 
+                        print(f"--> {midx_path}")
                         midx = data[:, xplane, clipY[0]:data.shape[2]-clipY[1]]
                         Image.fromarray(midx).save(midx_path)
 
@@ -113,27 +117,8 @@ def process_directory(input_dir, output_dir, dir_name, plane=-1, clipZ=[0,0], cl
 
 
 if __name__ == "__main__":
-
-    # parent_dir = 'D:\\rlondo\\HandGFPbynGAL4klar_H2AGFPUASMyo1CRFP\\2024-05-15_230441'  # Replace with your parent directory path
-    # parent_dir = 'D:\\rlondo\\HandGFPbynGAL4klar_UASmChCAAXH2AviRFP\\2024-05-17_184833'  # Replace with your parent directory path
-    # parent_dir = 'D:\\rlondo\\HandGFPbynGAL4klar_UASmChCAAXH2AviRFP\\2024-05-17_184833'  # Replace with your parent directory path
-    # parent_dir = 'E:\\Chris_jun22\\2025-06-22_171054'
-    # parent_dir = 'E:\\rio\\HandGFPbynGAL4klar_UASmChCAAXHiFP\\2024-05-27_125722_22C_butFocusDrifts'
-    # parent_dir = 'E:\\rio\\HandGFPbynGAL4klar_UASMyo1CRFPHiFP\\2024-05-28_150855'
-    # parent_dir = 'E:\\rio\\HandGFPbynGAL4klar_UASMyo1CRFPHiFP\\2024-05-28_150855_excellent'
-    # parent_dir = 'E:\\rio\\HandGFPbynGAL4klar_UASmChCAAXHiFP\\2024-05-31_142410'
-    # parent_dir = 'E:\\Chris\\HandGFPbynGAL4klar_UASmChCAAXHiRFP\\2024-07-03_163826'
-    # parent_dir = 'E:\\Chris\\Fish Sarah\\2024-07-10_153939'
-    # parent_dir = 'E:\\haibei\\HandGFP_48YGAL4klar_UASmChCAAX_UASLamGFP\\2024-11-09_171035_HandGFP_48YGAL4klar_UASmChCAAX_UASLamGFP_PART1'
-    # parent_dir = 'E:\\2024-12-18_193810'
-    # parent_dir = 'E:\\Alex\\2025-03-07_115351'
-    # parent_dir = 'E:\\Alex\\HandGFP48YGAL4UASmChCAAXHiRFP\\2025-03-12_144525'
-    # parent_dir = 'E:\\boris\\bynGAL4klar_UASmChCAAXHiRFP\\2025-03-27_180735_part5'
-    # parent_dir = 'E:\\boris\\bynGAL4klar_UASmChCAAXHiRFP\\2025-03-26_161409_part3'
-    # parent_dir = 'E:\\boris\\bynGAL4klar_UASmChCAAXHiRFP\\20250327_tiltedEmbryo_shiftsinY\\2025-03-27_180735_part5'
-    # parent_dir = 'E:\\stabilityTest\\2024-12-19_102207'
-    # parent_dir = 'E:\\haibei\\2025-08-03_145249_tinman[346]_48YGAL4_UASmChCAAX_HiRFP'
     parent_dir = 'E:\\avistrok\\bapGAL4_UAShidUASstingerHiRFP\\2025-08-06_121230' #bapGAL4_UAShidUASstingerHiRFP'
+    parent_dir = '/project/npmitchell/avistrok/bapGAL4_UAShidUASstingerHiRFP/2025-08-04_131451/'
 
     #parent_dir = 'E:\\boris\\bynGAL4klar_UASmChCAAXHiRFP\\2025-06-17\\2025-06-17_165029'
     # "E:\boris\bynGAL4klar_UASmChCAAXHiRFP\2025-06-16\2025-06-16_153503"
