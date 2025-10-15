@@ -14,13 +14,20 @@ from datetime import datetime
 # ----------------------------
 # User parameters
 # ----------------------------
-rootdir = './interestpoints/'
+datdir = 'F:\\PROJECTS\\LightMicroscopyBootcamp2025\\bynGAL4klar_UASmChCAAXUASGFPnls\\20251011181532_bynGAL4klar_UASmChCAAX_UASGFPnls_combined\\'
+rootdir = os.path.join(datdir,'interestpoints\\')
+# rootdir = './interestpoints/'           # directory containing *.beads.ip.txt files
+
+# imfn = 'c*_t*_a*.ome.tif' 
+imfn = 'tp_*_c*_angle_*.ome.tif' 
+tca = 'tca'   # the order of time, channel, and angle in the image filenames
+
 previewIPs = True
-pauseTime = 0.1
-previewEveryN = 10
+pauseTime = 0.05
+previewEveryN = 30
 densityThres = 0.02   # threshold for local density color scale
 dz = 1.0              # um, axial sampling
-dx = 0.195            # um, in-plane sampling
+dx = 0.2925  # 0.195            # um, in-plane sampling
 
 # ----------------------------
 # Helpers
@@ -38,6 +45,66 @@ def read_ip_file(fn):
         )
     xyz = data[:, 1:4]
     return ids, xyz
+
+import re
+
+def build_regex_from_template(imfn: str):
+    """
+    Build a regex with named groups (?P<t>), (?P<c>), (?P<a>) from a template.
+    Supports either token mode:  'tp_{t}_c{c}_angle_{a}.ome.tif'
+    or heuristic wildcard mode: 'tp_*_c*_angle_*.ome.tif' (common MVB/Luxendo style).
+    """
+    # Token mode (preferred)
+    if any(tok in imfn for tok in ('{t}', '{c}', '{a}')):
+        pat = re.escape(imfn)
+        pat = pat.replace(r'\{t\}', r'(?P<t>\d+)')
+        pat = pat.replace(r'\{c\}', r'(?P<c>\d+)')
+        pat = pat.replace(r'\{a\}', r'(?P<a>\d+)')
+        # For any other '*' you may have in the template, treat as non-greedy wildcard
+        pat = pat.replace(r'\*', r'.*?')
+        return re.compile(r'^' + pat + r'$')
+
+    # Heuristic mode for the specific style: 'tp_*_c*_angle_*.ome.tif'
+    # We interpret the '*' after 'tp_' as {t}, after 'c' as {c}, after 'angle_' as {a}.
+    # Any other '*' are treated as wildcards.
+    s = re.escape(imfn)
+
+    # Replace escaped anchors for the three key numeric fields
+    s = s.replace(r'tp_\*', r'tp_(?P<t>\d+)')
+    s = s.replace(r'c\*',   r'c(?P<c>\d+)')
+    s = s.replace(r'angle_\*', r'angle_(?P<a>\d+)')
+
+    # Remaining '*' (if any) become non-greedy wildcards
+    s = s.replace(r'\*', r'.*?')
+    return re.compile(r'^' + s + r'$')
+
+
+def parse_filename(name: str, imfn: str, tca: str = 'tca'):
+    """
+    Parse filename using `imfn` template and return (c, t, a) following your `tca` ordering.
+    - `tca` is a permutation of 'cta' describing the order of numeric fields in the *string*.
+    """
+    tca = tca.lower()
+    if sorted(tca) != ['a', 'c', 't']:
+        raise ValueError("tca must be a permutation of 'cta'.")
+
+    pat = build_regex_from_template(imfn)
+    m = pat.search(name)
+    if not m:
+        raise ValueError(f"Filename does not match template: {name}  vs  {imfn}")
+
+    # We captured by *names*, so get canonical values:
+    try:
+        vals = {k:int(v) for k,v in m.groupdict().items()}
+    except Exception as e:
+        raise ValueError(f"Template must expose numeric fields for t,c,a. Error: {e}")
+
+    # If you want to *enforce/reflect* the declared tca order, we can check consistency:
+    # Build the order we *saw* in the filename by scanning for the named groups.
+    # (This is optional; named groups already give correct values regardless of order.)
+    # Here we just return the canonical triplet:
+    return vals['c'], vals['t'], vals['a']
+
 
 def local_density_knn(xyz, k=10, z_scale=1.0):
     """Return local density = 1 / mean(distance to kNN) after scaling z."""
@@ -58,21 +125,21 @@ def local_density_knn(xyz, k=10, z_scale=1.0):
 # ----------------------------
 # Auto-detect timepoints and view-tiles from file names
 # ----------------------------
-# Expecting names like: c<chan>_t<tp>_a<angle>.ome.tif
-tp_files = glob.glob('./c*_t*_a*.ome.tif')
+# Expecting names like: c<chan>_t<tp>_a<angle>.ome.tif or similar. The order can be swapped based on tca.
+tp_files = glob.glob(os.path.join(datdir, imfn))
 
 if not tp_files:
-    raise FileNotFoundError("No files matching './c*_t*_a*.ome.tif' were found.")
+    raise FileNotFoundError("No files matching 'c*_t*_a*.ome.tif' were found.")
 
 tp_vals = []
 vtile_pairs = []  # (channel, angle)
-pat = re.compile(r'c(\d+)_t(\d+)_a(\d+)\.ome\.tif$')
-
 for fn in tp_files:
-    m = pat.search(os.path.basename(fn))
-    if not m:
+    base = os.path.basename(fn)
+    try:
+        c, t, a = parse_filename(base, imfn=imfn, tca=tca)
+    except ValueError:
+        # filename didn't match the template; skip
         continue
-    c, t, a = map(int, m.groups())
     tp_vals.append(t)
     vtile_pairs.append((c, a))
 
@@ -156,5 +223,5 @@ plt.tight_layout()
 
 stamp = datetime.now().strftime('%Y%m%d%H%M')
 outpng = f"interestpoint_counts_{stamp}.png"
-plt.savefig(outpng, dpi=200)
+plt.savefig(os.path.join(datdir,outpng), dpi=200)
 print(f"Saved: {outpng}")

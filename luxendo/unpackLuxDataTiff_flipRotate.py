@@ -175,6 +175,8 @@ def is_unsigned_integer(dataset):
 if __name__ == "__main__":
 
     directory_path = '/project/npmitchell/canto/HandGFPbynGAL4klar_UASMyo1CRFPHiRFP/2024-06-26_175116_crisp_120s_HandGFPbynGAL4klar_UASMyo1CRFPHiRFP'
+    directory_path = 'F:\\PROJECTS\\LightMicroscopyBootcamp2025\\PSF_33x_ALP_grp\\2025-10-14_121043'
+    directory_path = 'F:\\PROJECTS\\LightMicroscopyBootcamp2025\\bynGAL4klar_UASmChCAAXUASGFPnls\\20251014144825_60spf_combined\\2025-10-14_144825_tp0'
 
     datadir = os.path.join(directory_path, 'raw')
     # This is where the raw hdf5 files are. In linux use '/'

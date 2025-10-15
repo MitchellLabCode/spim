@@ -22,7 +22,7 @@ for ang in angles:
                 raise RuntimeError(f"More than one match for filename: {filename}")
             elif len(matches) == 1:
                 src = matches[0]
-                dst = src.with_name(f"tp_{tout:06d}_c{ch}_angle_{ang}.ome.tif")
+                dst = src.with_name(f"t{tout:06d}_c{ch}_a{ang}.ome.tif")
 
                 print(f"Seeking: {filename}")
                 print(f"renaming {src.name} > {dst.name}")
