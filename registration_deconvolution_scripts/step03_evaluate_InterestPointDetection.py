@@ -14,12 +14,13 @@ from datetime import datetime
 # ----------------------------
 # User parameters
 # ----------------------------
-datdir = 'F:\\PROJECTS\\LightMicroscopyBootcamp2025\\bynGAL4klar_UASmChCAAXUASGFPnls\\20251011181532_bynGAL4klar_UASmChCAAX_UASGFPnls_combined\\'
+datdir = 'F:\\PROJECTS\\LightMicroscopyBootcamp2025\\bynGAL4klar_UASmChCAAXUASGFPnls\\20251014144825_60spf_combined\\20251014145002_combined\\'
 rootdir = os.path.join(datdir,'interestpoints\\')
 # rootdir = './interestpoints/'           # directory containing *.beads.ip.txt files
 
 # imfn = 'c*_t*_a*.ome.tif' 
-imfn = 'tp_*_c*_angle_*.ome.tif' 
+imfn = 't*_c*_a*.ome.tif' 
+imfn2 = 't{t}_c{c}_a{a}.ome.tif' 
 tca = 'tca'   # the order of time, channel, and angle in the image filenames
 
 previewIPs = True
@@ -27,7 +28,7 @@ pauseTime = 0.05
 previewEveryN = 30
 densityThres = 0.02   # threshold for local density color scale
 dz = 1.0              # um, axial sampling
-dx = 0.2925  # 0.195            # um, in-plane sampling
+dx = 0.195          # 0.2925  # 0.195            # um, in-plane sampling
 
 # ----------------------------
 # Helpers
@@ -127,16 +128,16 @@ def local_density_knn(xyz, k=10, z_scale=1.0):
 # ----------------------------
 # Expecting names like: c<chan>_t<tp>_a<angle>.ome.tif or similar. The order can be swapped based on tca.
 tp_files = glob.glob(os.path.join(datdir, imfn))
-
+print(tp_files)
 if not tp_files:
-    raise FileNotFoundError("No files matching 'c*_t*_a*.ome.tif' were found.")
+    raise FileNotFoundError("No matching files were found.")
 
 tp_vals = []
 vtile_pairs = []  # (channel, angle)
 for fn in tp_files:
     base = os.path.basename(fn)
     try:
-        c, t, a = parse_filename(base, imfn=imfn, tca=tca)
+        c, t, a = parse_filename(base, imfn=imfn2, tca=tca)
     except ValueError:
         # filename didn't match the template; skip
         continue

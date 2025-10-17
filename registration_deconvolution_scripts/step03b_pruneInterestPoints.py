@@ -13,20 +13,21 @@ from datetime import datetime
 # ----------------------------
 # User parameters (edit here)
 # ----------------------------
-rootdir = 'F:\\PROJECTS\\LightMicroscopyBootcamp2025\\bynGAL4klar_UASmChCAAXUASGFPnls\\20251011181532_bynGAL4klar_UASmChCAAX_UASGFPnls_combined\\interestpoints\\'
+datdir = 'F:\\PROJECTS\\LightMicroscopyBootcamp2025\\bynGAL4klar_UASmChCAAXUASGFPnls\\20251014144825_60spf_combined\\20251014145002_combined\\'
+rootdir = os.path.join(datdir,'interestpoints\\')
 # rootdir = './interestpoints/'           # directory containing *.beads.ip.txt files
-tps = list(range(0, 119))               # timepoints to prune (0:118)
+tps = list(range(82, 227))               # timepoints to prune (0:118)
 vtiles = list(range(0, 12))             # view tiles to prune (0:17)
 
 # Experimental data spacing
 dz = 1.0      # um, step between frames in z
-dx = 0.2925    # um, pixel size in xy
+dx = 0.195    # 0.2925 for 22.2x, 0.195 for 33.3x --> um, pixel size in xy
 
 # Density-based pruning
 useDensity = True
 densityThres = 0.02
-preview = True
-pausetime = 0.2  # seconds
+preview = False
+pausetime = 0.05  # seconds
 
 # ROI-based pruning (placeholder to mirror MATLAB behavior)
 useROI = False
@@ -201,7 +202,7 @@ def main():
 
     stamp = datetime.now().strftime('%Y%m%d%H%M')
     outpng = f"interestpoint_counts_Pruned_{stamp}.png"
-    plt.savefig(outpng, dpi=200)
+    plt.savefig(os.path.join(datdir, outpng), dpi=200)
     print(f"Saved: {outpng}")
 
 
