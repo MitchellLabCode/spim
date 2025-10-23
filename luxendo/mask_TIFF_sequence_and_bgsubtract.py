@@ -8,24 +8,29 @@ This removes the outside (ex beads) while retaining an iLastik-identified ROI (e
 """
 
 # ==== USER CONFIG ============================================================
-H5_PATH        = r"D:\\mblBootcamp\\bynGAL4klar_UASmChCAAXUASGFPnls\\20251011181532_bynGAL4klar_UASmChCAAX_UASGFPnls_combined\\hindgut_avgAcrossTime_Merged_downsampled4x_Probabilities_float32.h5"
+root_path = r"/mnt/data/hindgut/bynGAL4klar_UASmChCAAXUASGFPnls/20251011181532_bynGAL4klar_UASmChCAAX_UASGFPnls_combined/"
+H5_PATH        = root_path + r"hindgut_avgAcrossTime_Merged_downsampled4x_Probabilities_float32.h5"
 H5_DATASET     = "/exported_data"     # typical iLastik dataset path (adjust if needed)
 ILASTIK_CH     = 0                    # which class prob to use (0 or 1 for 2-class iLastik)
 THRESH         = 0.5                  # threshold on probability to create mask
-INPUT_GLOB     = r"D:\\mblBootcamp\\bynGAL4klar_UASmChCAAXUASGFPnls\\20251011181532_bynGAL4klar_UASmChCAAX_UASGFPnls_combined\\deconvolved18iter_15it\\TP*.tif"  # wildcards OK
-OUTPUT_DIR     = r"D:\\mblBootcamp\\bynGAL4klar_UASmChCAAXUASGFPnls\\20251011181532_bynGAL4klar_UASmChCAAX_UASGFPnls_combined\\masked_deconvolved_18it_15it_bgsub\\"                # will be created if missing
-OUTPUT_MIP_DIR     = r"D:\\mblBootcamp\\bynGAL4klar_UASmChCAAXUASGFPnls\\20251011181532_bynGAL4klar_UASmChCAAX_UASGFPnls_combined\\masked_max_projection_bgsub\\"                # will be created if missing
+INPUT_GLOB     = root_path + r"deconvolved18iter_15it/TP*.tif"  # wildcards OK
+OUTPUT_DIR     = root_path + r"masked_deconvolved_18it_15it_bgsub/"                # will be created if missing
+OUTPUT_MIP_DIR     = root_path + r"masked_max_projection_bgsub/"                # will be created if missing
 PRESERVE_DTYPE = True                 # cast back to each original TIFF dtype
 PAD_VALUE      = 0                    # value to pad with if sizes off by a pixel at edges
 # ---- USER scaling for background (y0:y1, x0:x1) ----
 fudge_factor = 0.01
-
+# ROI for bg_min computation in the Z-max projection MIP.
+# Set to None to use the whole projected mask, or (y0, y1, x0, x1) to restrict.
+ROI = (250, 700, 50, 520)
+# ROI = None
 # ============================================================================
 
 import os
 import sys
 import glob
 from pathlib import Path
+import re
 import numpy as np
 import h5py
 import tifffile as tiff
@@ -52,9 +57,23 @@ def read_ilastik_prob_volume(h5_path, dataset, ch_index):
     return prob
 
 def first_tiff_shape(input_glob):
-    files = sorted(glob.glob(input_glob))
+    files = glob.glob(input_glob)
     if not files:
         raise SystemExit(f"No files matched: {input_glob}")
+
+    def _natural_key(path):
+        name = os.path.basename(path)
+        parts = re.split(r'(\d+)', name)
+        key = []
+        for p in parts:
+            if p.isdigit():
+                key.append(int(p))
+            else:
+                key.append(p.lower())
+        return tuple(key)
+
+    files = sorted(files, key=_natural_key)
+
     with tiff.TiffFile(files[0]) as tf:
         shp = tf.series[0].shape
     if len(shp) != 3:
@@ -200,15 +219,31 @@ def main():
         # ---- compute bg_min from inside-mask only (robust to outside zeros) ----
         mip_orig = np.max(vol, axis=0)  # (Y, X)
         mip_mask = np.max(m, axis=0) > 0  # where object projects in MIP
-        inside_vals = mip_orig[mip_mask]
+
+        # If an ROI is specified, restrict both the MIP and the mask to that ROI
+        if ROI is not None:
+            y0, y1, x0, x1 = ROI
+            # clamp to image bounds
+            y0 = max(0, int(y0)); y1 = min(mip_orig.shape[0], int(y1))
+            x0 = max(0, int(x0)); x1 = min(mip_orig.shape[1], int(x1))
+            if y0 >= y1 or x0 >= x1:
+                raise ValueError(f"Invalid ROI {ROI} for mip shape {mip_orig.shape}")
+            mip_roi = mip_orig[y0:y1, x0:x1]
+            mip_mask_roi = mip_mask[y0:y1, x0:x1]
+            print(f"[INFO] Using ROI {y0}:{y1}, {x0}:{x1} for bg_min computation")
+        else:
+            mip_roi = mip_orig
+            mip_mask_roi = mip_mask
+
+        inside_vals = mip_roi[mip_mask_roi]
         if inside_vals.size == 0:
-            raise ValueError("Mask is empty over this stack; cannot compute baseline.")
+            raise ValueError("Mask (within ROI) is empty over this stack; cannot compute baseline.")
 
         # FILTER FOR STRICTLY NONZERO VALUES
         nonzero_inside = inside_vals[inside_vals > 0]
 
         if nonzero_inside.size == 0:
-            print("WARNING: No nonzero inside-mask values found; falling back to minimal positive constant")
+            print("WARNING: No nonzero inside-mask values found within ROI; falling back to minimal positive constant")
             bg_min = 1e-3
             Exception("No nonzero inside-mask values found; This should be an error")
         else:
