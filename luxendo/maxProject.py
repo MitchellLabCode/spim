@@ -4,6 +4,7 @@ import tifffile
 import numpy as np
 import matplotlib.pyplot as plt
 from PIL import Image
+from scipy.ndimage import zoom
 
 
 # Function to save MIP images
@@ -15,7 +16,7 @@ from PIL import Image
 
 # Function to process a single directory
 def process_directory(input_dir, output_dir, dir_name, plane=-1, clipZ=[0,0], clipX=[0,0], clipY=[0,0],
-                      planeX=[-1], do_mips=True, do_midZ=True, do_midX=False, process_in_reverse=True):
+                      planeX=[-1], do_mips=True, do_midZ=True, do_midX=False, process_in_reverse=True, um_per_pixels=0.2925):
     # Go through all directories in the input_dir directory, make MIPS of all subdirectories
     # Note data is in format ZXY.
     #
@@ -114,16 +115,19 @@ def process_directory(input_dir, output_dir, dir_name, plane=-1, clipZ=[0,0], cl
 
                         print(f"--> {midx_path}")
                         midx = data[:, xplane, clipY[0]:data.shape[2]-clipY[1]]
-                        Image.fromarray(midx).save(midx_path)
+                        # Rescale along the y-axis (axis=1) to achieve unit aspect ratio
+                        scale_factor = 1 / um_per_pixels
+                        midx_rescaled = zoom(midx, (scale_factor,1), order=1)  # bilinear interpolation
+                        Image.fromarray(midx_rescaled).save(midx_path)
 
             else:
                 print(f"--> Output file already exists, skipping: {max_proj_path}")
 
 
 if __name__ == "__main__":
-    parent_dir = 'E:\\avistrok\\bapGAL4_UAShidUASstingerHiRFP\\2025-08-06_121230' #bapGAL4_UAShidUASstingerHiRFP'
-    parent_dir = '/project/npmitchell/avistrok/bapGAL4_UAShidUASstingerHiRFP/2025-08-04_165006/'
-
+    parent_dir = 'E:\\avistrok\\bapGAL4_UAShidUASstingerHiRFP\\2025-11-14_100116' #bapGAL4_UAShidUASstingerHiRFP'
+    parent_dir = 'E:\\Chris\\bapGAL4UAShidUASStingerH2aviRFP\\2025-11-15_094150_alive_and_moving_nextDay'
+    parent_dir = 'E:\\Chris\\bapGAL4UAShidUASStingerH2aviRFP\\2025-11-14_162258'
     #parent_dir = 'E:\\boris\\bynGAL4klar_UASmChCAAXHiRFP\\2025-06-17\\2025-06-17_165029'
     # "E:\boris\bynGAL4klar_UASmChCAAXHiRFP\2025-06-16\2025-06-16_153503"
     multiple_dirs = False
