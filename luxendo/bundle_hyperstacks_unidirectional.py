@@ -15,7 +15,44 @@ import tifffile as tiff
 
 
 def max_project_blocks_h5(in_h5, out_tif, nzplanes, zstart_1based=1, dset="/Data", xyt_axes=[1,2,0]):
-    """Perform blockwise max projection on one HDF5 file."""
+    """Perform blockwise max projection on one HDF5 file.
+
+    The function groups consecutive frames along the time axis into blocks of
+    size ``nzplanes`` and computes a max projection over the frames in each
+    block. The result is saved as a multi-page TIFF where each page is the
+    max-projection of one block.
+
+    Parameters
+    ----------
+    in_h5 : str or path-like
+        Path to the input HDF5 file. The file is opened read-only inside the
+        function.
+    out_tif : str or path-like
+        Path for the output TIFF file to write. A multi-page TIFF is written
+        with axis ordering compatible with ImageJ ('TYX').
+    nzplanes : int
+        Number of consecutive time frames that form one Z-block to be
+        collapsed (max-projected) into a single Z-slice in the output.
+    zstart_1based : int, optional
+        1-based start offset applied to the first frame of each block. For
+        example, ``zstart_1based=1`` (default) means blocks start at the
+        nominal first frame; ``zstart_1based=2`` shifts the start by one frame.
+    dset : str, optional
+        HDF5 dataset path inside the file to read image data from (default
+        ``"/Data"``). The dataset must be 3-dimensional.
+    xyt_axes : list of three ints, optional
+        Mapping of dataset axes to X, Y and T axes. Provide a list of three
+        0-based axis indices in the order ``[x_axis, y_axis, t_axis]`` so the
+        code can index into ``ds.shape`` correctly. Default ``[1, 2, 0]``
+        assumes the dataset ordering where axis 0 is time, axis 1 is X and
+        axis 2 is Y (adjust if your dataset uses a different layout).
+
+    Returns
+    -------
+    None
+        Writes the TIFF file at ``out_tif``. Raises ``KeyError`` if ``dset`` is
+        not found in the HDF5 file or other exceptions on I/O errors.
+    """
     z0 = zstart_1based - 1
     with h5py.File(in_h5, "r") as f:
         if dset not in f:
@@ -51,7 +88,30 @@ def max_project_blocks_h5(in_h5, out_tif, nzplanes, zstart_1based=1, dset="/Data
     print(f"[OK] {in_h5.name} -> {out_tif}")
 
 def batch_project_directory(in_dir, out_dir, nzplanes, zstart_1based=1, dset="/Data"):
-    """Loop over all .h5 files in a directory and process each."""
+    """Process all .h5 files in a directory and write Z-projected TIFFs.
+
+    Parameters
+    ----------
+    in_dir : str or path-like
+        Directory containing input ``.h5`` files to process.
+    out_dir : str or path-like
+        Directory where output TIFF files will be written. The directory is
+        created if it does not exist.
+    nzplanes : int
+        Number of frames to group into each block for max projection.
+    zstart_1based : int, optional
+        1-based offset to use as the start index within each block (default
+        is 1). Passed through to ``max_project_blocks_h5``.
+    dset : str, optional
+        Dataset path inside each HDF5 file to read image data from
+        (default ``"/Data"``). Passed through to ``max_project_blocks_h5``.
+
+    Returns
+    -------
+    None
+        Writes one TIFF per input HDF5 file. Errors for individual files are
+        printed but do not stop processing of the directory.
+    """
     in_dir, out_dir = Path(in_dir), Path(out_dir)
     out_dir.mkdir(parents=True, exist_ok=True)
     files = sorted(in_dir.glob("*.h5"))

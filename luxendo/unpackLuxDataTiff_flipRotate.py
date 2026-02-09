@@ -4,8 +4,14 @@ import numpy as np
 from tifffile import imwrite
 import xml.etree.ElementTree as ET # no need to install
 import re # no need to install#
-from ome_types import from_xml
-from ome_types.model import OME, Image, Pixels, Channel, TiffData
+try:
+    from ome_types import from_xml
+    from ome_types.model import OME, Image, Pixels, Channel, TiffData
+except ImportError:
+    import subprocess, sys
+    subprocess.check_call([sys.executable, "-m", "pip", "install", "ome-types"])
+    from ome_types import from_xml
+    from ome_types.model import OME, Image, Pixels, Channel, TiffData
 
 """Unpack Luxendo datasets to OME-TIFF format readable by Preibisch plugins without limiting the LUT"""
 def parse_bdv_xml(xml_file): # xml_file is bdv_xml_file, which is the path to the 'bdv.xml'
@@ -18,6 +24,9 @@ def parse_bdv_xml(xml_file): # xml_file is bdv_xml_file, which is the path to th
     # root.attib # {'version': '0.2'}s
 
     angle_map = {}
+    objective_choice = 0  # 1:left right     2:left long     3:left short   4:long short
+    flag_long = 0
+    flag_short = 0
 
     for setup in root.findall(".//ViewSetup"):
         # len(root.findall(".//ViewSetup")) # this is a list. Len = 12.
@@ -38,9 +47,30 @@ def parse_bdv_xml(xml_file): # xml_file is bdv_xml_file, which is the path to th
             end_idx = setup_name.find('-v')
             angle_map['stack_' + setup_name[8] + '_channel_' + setup_name[3] + '_obj_right'] = setup_name[start_idx + 5:end_idx]
 
+        if 'long' in setup_name:
+            flag_long = 1
+
+        if 'short' in setup_name:
+            flag_short = 1
+
         # print(angle_map)
         # {'stack_1_channel_0_obj_left': '240', 'stack_1_channel_0_obj_right': '60', 'stack_1_channel_2_obj_left': '240', 'stack_1_channel_2_obj_right': '60', 'stack_2_channel_0_obj_left': '300', 'stack_2_channel_0_obj_right': '120', 'stack_2_channel_2_obj_left': '300', 'stack_2_channel_2_obj_right': '120', 'stack_3_channel_0_obj_left': '0', 'stack_3_channel_0_obj_right': '180'}
-    return angle_map
+    if flag_short:
+        if flag_long:
+            objective_choice = 4
+        else:
+            objective_choice = 3
+            raise RuntimeError("Short objective detected but long objective not detected. Please check bdv.xml. In principle you should only have left/long, short/long, or left/short/long")
+    else:
+        if flag_long:
+            objective_choice = 2
+        else:
+            objective_choice = 1
+
+    print("objective choice: ")
+    print(objective_choice)
+
+    return (angle_map, objective_choice)
 
 def convert_hdf5_files_in_directory(directory, output_directory, bdv_xml_file, overwrite):
     # Create output directory if it doesn't exist
@@ -48,7 +78,7 @@ def convert_hdf5_files_in_directory(directory, output_directory, bdv_xml_file, o
     os.makedirs(output_directory, exist_ok=True)
 
     # Parse the bdv.xml file
-    angle_map = parse_bdv_xml(bdv_xml_file)
+    (angle_map, objective_choice) = parse_bdv_xml(bdv_xml_file)
 
     for root, dirs, files in os.walk(directory):
         # os.walk("...") returns a generator   <generator object _walk at 0x7dfd8bc536f0>
@@ -57,7 +87,7 @@ def convert_hdf5_files_in_directory(directory, output_directory, bdv_xml_file, o
                 file_path = os.path.join(root, file)
                 # file path (an example): '/mnt/data/midgut_tubulogenesis/48Y-GAL4-klar_UASmChCAAXSLamGFP/2024-05-06_143154/raw/stack_1_channel_1_obj_right/Cam_right_00077.lux.h5'
                 # Use this file to test the function "convert_hdf5_data_to_ome_tiff"
-                convert_hdf5_data_to_ome_tiff(file_path, output_directory, angle_map, overwrite)
+                convert_hdf5_data_to_ome_tiff(file_path, output_directory, angle_map, objective_choice, overwrite)
 
 
 def extract_timepoint(filename):
@@ -68,7 +98,7 @@ def extract_timepoint(filename):
 
 # Read dataset. We should convert the dataset to an inverted way,
 # and also rotate the dataset after this step.
-def convert_hdf5_data_to_ome_tiff(filename, output_directory, angle_map, overwrite):
+def convert_hdf5_data_to_ome_tiff(filename, output_directory, angle_map, objective_choice, overwrite):
     # filename = file_path
     # check if the output file already exists
 
@@ -83,11 +113,22 @@ def convert_hdf5_data_to_ome_tiff(filename, output_directory, angle_map, overwri
             # print('key is in filename')
             angle_suffix = angle_map[key]
 
-    # angles=list(angle_map.values())
-    # for i in angles:
-    tiff_filename = f"{subdirectory_name}_{original_filename}_{angle_suffix}.ome.tif"
+
+    # Remove leading 'stack_<n>_' from the subdirectory name so filenames
+    # don't include the redundant stack prefix (e.g. 'stack_1_').
+    clean_subdir = re.sub(r'^stack_\d+_', '', subdirectory_name)
+
+    tiff_filename = f"{clean_subdir}_{original_filename}_{angle_suffix}.ome.tif"
     tiff_filename = tiff_filename.replace('_left_Cam_left', '_tp')
     tiff_filename = tiff_filename.replace('_right_Cam_right', '_tp')
+    # If the BDV indicates the left objective is 'long' (objective_choice == 2),
+    # do not include '_long' in the TIFF filename — use the standard '_tp' suffix.
+    if objective_choice == 2:
+        tiff_filename = tiff_filename.replace('_right_Cam_long', '_tp')
+    else:
+        tiff_filename = tiff_filename.replace('_right_Cam_long', '_long_tp')
+    
+    tiff_filename = tiff_filename.replace('_right_Cam_short', '_short_tp')
     tiff_filename = tiff_filename.replace('.lux', '_angle')
     tiff_filename = tiff_filename.replace('_obj', '')
 
@@ -106,11 +147,25 @@ def convert_hdf5_data_to_ome_tiff(filename, output_directory, angle_map, overwri
                 # dataset_shape = dataset.shape
                 if is_unsigned_integer(dataset):
                     uint16_data = dataset[:] # [::-1, :, :] does not work for hdf5 dataset
-                    if 'left' in filename:
-                        uint16_data_z_flipped = np.flip(uint16_data, axis=0) # Actually only the left one should be flipped.
-                    elif 'right' in filename:
-                        uint16_data_z_flipped = uint16_data
-                        # print('From the right camera, not flipping')
+                    # Handle flipping depending on detected objective configuration.
+                    # objective_choice == 1: left -> flip axis=0, right -> no flip
+                    # objective_choice == 2: left -> flip axis=0, right -> flip axis=2 (long camera)
+                    if objective_choice == 1:
+                        if 'left' in filename:
+                            uint16_data_z_flipped = np.flip(uint16_data, axis=0)
+                        elif 'right' in filename:
+                            uint16_data_z_flipped = uint16_data
+                    elif objective_choice == 2:
+                        if 'left' in filename:
+                            uint16_data_z_flipped = np.flip(uint16_data, axis=0)
+                        elif 'right' in filename:
+                            uint16_data_z_flipped = np.flip(uint16_data, axis=2)
+                    else:
+                        # Fallback to original behaviour (flip left only)
+                        if 'left' in filename:
+                            uint16_data_z_flipped = np.flip(uint16_data, axis=0)
+                        else:
+                            uint16_data_z_flipped = uint16_data
 
                     # So later the right one should be done without this line.
                     # Or actually use if to judge if it is left / right
@@ -175,8 +230,7 @@ def is_unsigned_integer(dataset):
 if __name__ == "__main__":
 
     directory_path = '/project/npmitchell/canto/HandGFPbynGAL4klar_UASMyo1CRFPHiRFP/2024-06-26_175116_crisp_120s_HandGFPbynGAL4klar_UASMyo1CRFPHiRFP'
-    directory_path = 'F:\\PROJECTS\\LightMicroscopyBootcamp2025\\PSF_33x_ALP_grp\\2025-10-14_121043'
-    directory_path = 'F:\\PROJECTS\\LightMicroscopyBootcamp2025\\bynGAL4klar_UASmChCAAXUASGFPnls\\20251014144825_60spf_combined\\2025-10-14_144825_tp0'
+    directory_path = 'E:\\npmitchell\\mef2GAL4UASRsetGCaMP8s\\2026-02-05_142900_e2_unidirectional_5sec100repsEvery20min'
 
     datadir = os.path.join(directory_path, 'raw')
     # This is where the raw hdf5 files are. In linux use '/'
