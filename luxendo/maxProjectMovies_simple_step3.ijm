@@ -1,12 +1,12 @@
 //// SET PARAMETERS ///////////////////////////////////////////////////////////////////
 
-nStacks = 3 ; // Number of stacks total
+nStacks = 6 ; // Number of stacks total
 stack0 = 0 ; // what is the index of the first stack? Usually zero.
 fps = 5; // frames per second do you want the output movies to play at
 
 // Make sure to have a trailing forward slash at the end!
 outputDir = "E:/avistrok/bapGAL4_UAShidUASstingerHiRFP/20251113121832_bapGAL4UAShidUASStingerHiRFP_3mpf_22x/";
-
+outputDir = "E:/dave/2026-05-18_170849/";
 
 // Now run step3
 

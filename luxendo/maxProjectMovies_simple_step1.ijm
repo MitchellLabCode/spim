@@ -3,16 +3,16 @@
 // scale = 0.19500001; // 33x magnification has 0.195 microns / pixel
 scale = 0.2925 ; // scale for 22.2x
 interval = 3 ; // minutes per dt 
-nStacks = 3 ; //
-nChannels = 2 ; // number of Channels
+nStacks = 6 ; //
+nChannels = 3 ; // number of Channels
 stack0 = 0 ; // what is the index of the first stack? Usually zero.
 time0 = 0 ; // first frame's timestamp in minutes
-doMIPs = 0 ;
-doMidZ = 0 ;
-doMidX = 1 ;
+doMIPs = 1 ;
+doMidZ = 1 ;
+doMidX = 0 ;
 midX_list = newArray("0620", "0720", "0820", "0920", "1020");
 
-minCh = 1;
+minCh = 0; // minimum index of channels
 flipRight = true ;
 
 if (nChannels == 2) {
@@ -41,7 +41,8 @@ if (nChannels == 3) {
 //outputDir = "E:/boris/bynGAL4klar_UASmChCAAXHiRFP/2025-06-17_135805/";
 
 //outputDir = "E:/Chris/bapGAL4UAShidUASStingerH2aviRFP/2025-06-22_171054/";
-outputDir = "E:/avistrok/bapGAL4_UAShidUASstingerHiRFP/20251113121832_bapGAL4UAShidUASStingerHiRFP_3mpf_22x/";
+outputDir = "E:/andrewfee/Datasets with MIPs/202604211253_e1_MHLH54RFPbyn5_FHandGFPHiRFPbyn5/";
+outputDir = "E:/dave/2026-05-18_170849/";
 
 //// END OF PARAMETERS SECTION //////////////////////////////////////////////////////
 
@@ -61,32 +62,13 @@ for (stck = stack0; stck < nStacks+stack0; stck++) {
 		}
 				
 		// Load midXs
-		for (mx = 0; mx < midX_list.length; mx++) {
-		    midX = midX_list[mx];
-		
-		    for (stck = stack0; stck < nStacks+stack0; stck++) {
-		        for (ch = minCh; ch < nChannels+minCh; ch++) {
-		
-		            if (doMIPs) {
-		                File.openSequence(outputDir + "mips/stack_" + stck + "_channel_" + ch + "_obj_left_mips/");
-		                File.openSequence(outputDir + "mips/stack_" + stck + "_channel_" + ch + "_obj_right_mips/");
-		            }
-		
-		            if (doMidZ) {
-		                File.openSequence(outputDir + "midZ/stack_" + stck + "_channel_" + ch + "_obj_left_midZ/");
-		                File.openSequence(outputDir + "midZ/stack_" + stck + "_channel_" + ch + "_obj_right_midZ/");
-		            }
-		
-		            if (doMidX) {
-		                File.openSequence(outputDir + "midX" + midX + "/stack_" + stck + "_channel_" + ch + "_obj_left_midX" + midX + "/");
-		                File.openSequence(outputDir + "midX" + midX + "/stack_" + stck + "_channel_" + ch + "_obj_right_midX" + midX + "/");
-		            }
-		        }
+		if (doMidX) {
+			for (mx = 0; mx < midX_list.length; mx++) {
+			    midX = midX_list[mx];
+		            File.openSequence(outputDir + "midX" + midX + "/stack_" + stck + "_channel_" + ch + "_obj_left_midX" + midX + "/");
+		            File.openSequence(outputDir + "midX" + midX + "/stack_" + stck + "_channel_" + ch + "_obj_right_midX" + midX + "/");
 		    }
 		}
-
-
-
 	}
 }
 
