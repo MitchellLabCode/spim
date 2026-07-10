@@ -1,0 +1,62 @@
+# SLURM Deconvolution Batch Template
+
+Dec 3, 2024 — Chris Anto (canto@uchicago.edu)
+Jul 7, 2026 — NPMitchell (npmitchell@uchicago.edu)
+
+This directory is a template for running multi-view deconvolution as a batch job on RCC. **Copy this directory elsewhere before editing** — don't modify the template in place — then follow the full protocol on [LabResources](https://docs.google.com/document/d/1POgY4802YNJ5gKTr1Buk5kvwCBillGMHnD1IpRqOSRE/edit?usp=sharing).
+
+## How it fits together
+
+`decon_main.sh` (sbatch job) → `deconvolve_timepoints.sh` → Fiji headless → `batch_macro.bsh` (ImageJ/Fiji macro)
+
+- **`decon_main.sh`** — the `sbatch` script. Sets the partition, memory, cpus-per-task, and the timepoint range (as a job array).
+- **`deconvolve_timepoints.sh`** — called by `decon_main.sh`; launches Fiji headless (via `xvfb-run`) and runs the macro.
+- **`batch_macro.bsh`** — the ImageJ/Fiji macro that actually performs the deconvolution.
+
+## Setup
+
+1. Copy this directory elsewhere and `cd` into your copy.
+2. Edit **`batch_macro.bsh`** for your dataset:
+   - XML dataset directory
+   - Processing channel
+   - Timepoint(s)
+   - Bounding box limits
+   - Number of iterations
+   - Output file directory
+   - PSF paths (specified by mag and excitation)
+
+   Leave everything else unchanged, or the macro won't work.
+3. Edit **`decon_main.sh`** for cluster resources and timepoint selection (see below).
+
+## Cluster (partition) settings
+
+The only CPU/partition configurations that work on RCC's shared partitions:
+
+| Partition | mem | cpus-per-task |
+|---|---|---|
+| `caslake` | `0G` | `40` |
+| `amd`     | `0G` | `64` |
+
+The `amd` config above is what we use for large bounding boxes (e.g. midgut at 33x). Also set `time` (walltime), `account=pi-npmitchell`, and a job name.
+
+For other configurations, see the [RCC partitions guide](https://rcc-uchicago.github.io/user-guide/partitions/#configurations); the [RCC user guide](https://rcc-uchicago.github.io/user-guide/) has more general info and is worth reading.
+
+Fiji is expected at `/project/npmitchell/fiji-linux64/Fiji.app/`. If you need a different installation, update the path in `deconvolve_timepoints.sh` (let Chris know if you think you need this).
+
+## Running the job
+
+From your copied directory on RCC:
+
+```bash
+sbatch decon_main.sh
+```
+
+Check job status:
+```bash
+squeue -u <cnetID>
+```
+
+Cancel a job:
+```bash
+scancel <jobID>
+```
