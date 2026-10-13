@@ -13,10 +13,10 @@
 # Edited and adapted to Midway3 at UChicago RCC, Chris Anto 2024, canto@uchicago.edu
 # #####################################################################################################################
 source ~/.bashrc
-module load fiji
+module load fiji/154
 
 echo "executing deconvolution"
-xvfb-run /project/npmitchell/canto/fijiattempt/fiji-linux64/Fiji.app/ImageJ-linux64 -Dimage.updater.disableAutocheck=true --ij2 --run batch_ch1.ijm
+xvfb-run fiji -Dimage.updater.disableAutocheck=true --ij2 --run batch_ch1.ijm
 
 # BACK_PID=$!
 # wait $BACK_PID
@@ -24,7 +24,7 @@ echo "done with deconvolution ch1"
 
 sleep 20s
 
-xvfb-run /project/npmitchell/canto/fijiattempt/fiji-linux64/Fiji.app/ImageJ-linux64 -Dimage.updater.disableAutocheck=true --ij2 --run batch_ch2.ijm
+xvfb-run fiji -Dimage.updater.disableAutocheck=true --ij2 --run batch_ch2.ijm
 
 # BACK_PID=$!
 # wait $BACK_PID
