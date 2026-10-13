@@ -8,7 +8,7 @@
 #SBATCH --account=pi-npmitchell
 #SBATCH --array=0-149 # range of timepoints for job array
 #SBATCH --mail-type=END
-#SBATCH --mail-user=wjsh@rcc.uchicago.edu
+#SBATCH --mail-user=YOUR_CNETID@uchicago.edu
 
 
 bash deconvolve_timepoints.sh 
