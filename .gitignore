@@ -8,3 +8,4 @@
 .idea/.name
 .idea\.name
 *.asv
+*.DS_Store
