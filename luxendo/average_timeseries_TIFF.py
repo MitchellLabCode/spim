@@ -17,6 +17,7 @@ OUTPUT_PATH = "D:\\mblBootcamp\\bynGAL4klar_UASmChCAAXUASGFPnls\\20251011181532_
 CHUNKED = True                            # True = memory safe z-slice summing
 IGNORE_NAN = False                        # True = NaN-aware averaging
 TARGET_DTYPE = None                       # e.g. "float32" or "uint16" or None
+H5_DATASET = "/Data"                      # HDF5 dataset path for output
 # ============================================================================
 
 import argparse
@@ -63,12 +64,13 @@ def average_tiff_series(filepaths, chunked=False, ignore_nan=False, target_dtype
             if ignore_nan:
                 mask = ~np.isnan(vol)
                 sum_vol[mask] += vol[mask]
-                count_vol[mask] += 1
+                if count_vol is not None:
+                    count_vol[mask] += 1
             else:
                 sum_vol += vol
 
         print()  # newline after progress
-        if ignore_nan:
+        if ignore_nan and count_vol is not None:
             with np.errstate(invalid="ignore", divide="ignore"):
                 mean_vol = sum_vol / np.maximum(count_vol, 1)
                 mean_vol[count_vol == 0] = np.nan
