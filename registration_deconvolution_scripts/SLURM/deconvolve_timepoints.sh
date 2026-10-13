@@ -16,19 +16,11 @@ source ~/.bashrc
 module load fiji/154
 
 echo "executing deconvolution"
-xvfb-run fiji -Dimage.updater.disableAutocheck=true --ij2 --run batch_ch1.ijm
+xvfb-run fiji -Dimage.updater.disableAutocheck=true --ij2 --run batch_singleTPsingleCh.ijm
 
 # BACK_PID=$!
 # wait $BACK_PID
 echo "done with deconvolution ch1"
-
-sleep 20s
-
-xvfb-run fiji -Dimage.updater.disableAutocheck=true --ij2 --run batch_ch2.ijm
-
-# BACK_PID=$!
-# wait $BACK_PID
-echo "done with deconvolution ch2"
 
 sleep 20s
 
