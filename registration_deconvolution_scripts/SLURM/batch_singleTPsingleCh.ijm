@@ -9,11 +9,12 @@ niterations="40";
 outdir=dataDir+"deconvolved32bit/";
 mag="22x";
 excitation="488";
+ch="0";
 
 passedArgument = call("java.lang.System.getenv", "SLURM_ARRAY_TASK_ID");
 
 opts0="select_xml="+dataDir+"dataset.xml process_angle=[All angles] process_channel=[Single channel (Select from List)] " ;
-opts1="process_illumination=[All illuminations] process_timepoint=[Multiple Timepoints (Select from List)] processing_channel=[channel 0] ";
+opts1="process_illumination=[All illuminations] process_timepoint=[Multiple Timepoints (Select from List)] processing_channel=[channel "+ch+"] ";
 opts1="timepoint_"+passedArgument+" type_of_image_fusion=[Multi-view deconvolution] bounding_box=[Define manually] fused_image=[Save as TIFF stack] ";
 opts2="minimal_x="+minx+" minimal_y="+miny+" minimal_z="+minz+" maximal_x="+maxx+" maximal_y="+maxy+" maximal_z="+maxz+" ";
 opts3="imglib2_container=[CellImg (large images)] imglib2_container_ffts=[CellImg (large images)] ";
